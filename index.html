@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Drzewo Genealogiczne</title>
   <style type="text/css">
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;  
+    }
+    #login {
+      background-color: #efefef;
+      padding: 20px;
+      border-radius: 8px;
+    }
     #myCanvas {
       cursor: pointer;
     }
@@ -12,9 +24,8 @@
 </head>
 <body>
   <div id="login">
-    <input id="password" type="password"/><button id="start">Go</button>
+    <input id="password" name="password" type="password" placeholder="podaj hasło"/><button id="start">Zaloguj</button>
   </div>
-  <canvas id="myCanvas" width="1000" height="1000" style="border:1px solid #666;"></canvas>
   <script>
     const encryptedData = {
  "iterations": 5000000,
@@ -499,9 +510,9 @@ const PERSON_HEIGHT = 100
 const EDGE_COLOR = "#666"
 const COUPLE_DIST = 50;
 
-function drawNode2(ctx, node) {
+function drawNode(ctx, node) {
   for (const child of node.children) {
-    drawNode2(ctx, child)
+    drawNode(ctx, child)
   }
   const m = 300
   const borderColor = "#000"
@@ -678,7 +689,7 @@ function base64ToUint8Array(base64String) {
   return uint8Array;
 }
 
-async function main(data) {
+async function main(data, canvas) {
   const people = data.people;
   const fams = data.fams
   const rootId = data.rootId;
@@ -861,8 +872,7 @@ printGraph(graph)
 
 console.log(levelData)
 
-var canvas = document.getElementById('myCanvas');
-var ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
 let panX = 0
 let panY = 0
 let scale = 1
@@ -872,15 +882,7 @@ function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.translate(panX, panY);
   ctx.scale(scale, scale);
-
-  drawNode2(ctx, root);
-
-  // for (const level of graph) {
-  //   for (const node of level) {
-  //     drawNode(ctx, node)
-  //   }
-  // }
-
+  drawNode(ctx, root);
   ctx.restore();
 }
 
@@ -929,9 +931,56 @@ canvas.addEventListener('wheel', (e) => {
   }
 });
 
+function getDistance(touches) {
+  const [touch1, touch2] = touches;
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) {
+      // Pinch zoom start
+      initialDistance = getDistance(e.touches);
+      isPanning = false;
+  } else if (e.touches.length === 1) {
+      // Pan start
+      startX = e.touches[0].clientX - panX;
+      startY = e.touches[0].clientY - panY;
+      isPanning = true;
+  }
+});
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault(); // Prevent scrolling
+
+  if (e.touches.length === 2) {
+      // Pinch to zoom
+      const currentDistance = getDistance(e.touches);
+      const distanceChange = currentDistance / initialDistance;
+      scale *= distanceChange;
+      initialDistance = currentDistance;
+      redraw();
+  } else if (e.touches.length === 1 && isPanning) {
+      // Pan
+      panX = e.touches[0].clientX - startX;
+      panY = e.touches[0].clientY - startY;
+      redraw();
+  }
+});
+
+// Handle touch end
+canvas.addEventListener('touchend', (e) => {
+  if (e.touches.length < 2) {
+      initialDistance = 0;
+      isPanning = false;
+  }
+});
+
+  const CANVAS_NO_SCROLL = 4
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth - CANVAS_NO_SCROLL;
+    canvas.height = window.innerHeight - CANVAS_NO_SCROLL;
   }
 
   resizeCanvas();
@@ -956,7 +1005,7 @@ buttonEl.addEventListener('click', async function () {
   const interval = setInterval(() => {
       dotCount = (dotCount + 1) % 4; // Cycle through 0, 1, 2, 3
       let dots = '.'.repeat(dotCount); // Create a string with the appropriate number of dots
-      button.textContent = `Go${dots}`;
+      button.textContent = `Zaloguj${dots}`;
   }, 250);
 
   const encryptedData2 = {
@@ -967,8 +1016,15 @@ buttonEl.addEventListener('click', async function () {
   try {
     const dataString = await decrypt(encryptedData2, password, encryptedData.iterations)
     const data = JSON.parse(dataString);
-    main(data);
     loginEl.remove();
+    const canvas = document.createElement('canvas');
+    canvas.id = 'myCanvas';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.border = '1px solid #ccc';
+    canvas.style.display = 'block'; // To remove any extra spacing (similar to using CSS reset)
+    document.body.appendChild(canvas);
+    main(data, canvas);
   } catch (err) {
     alert('Wrong password. Try again')
   }

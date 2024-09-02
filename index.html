@@ -931,6 +931,13 @@ canvas.addEventListener('wheel', (e) => {
   }
 });
 
+function getMidpoint(touches) {
+  const [touch1, touch2] = touches;
+  return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+  };
+}
 function getDistance(touches) {
   const [touch1, touch2] = touches;
   const dx = touch1.clientX - touch2.clientX;
@@ -940,14 +947,15 @@ function getDistance(touches) {
 
 canvas.addEventListener('touchstart', (e) => {
   if (e.touches.length === 2) {
-      // Pinch zoom start
-      initialDistance = getDistance(e.touches);
-      isPanning = false;
+    // Pinch zoom start
+    initialDistance = getDistance(e.touches);
+    midpoint = getMidpoint(e.touches);
+    isPanning = false;
   } else if (e.touches.length === 1) {
-      // Pan start
-      startX = e.touches[0].clientX - panX;
-      startY = e.touches[0].clientY - panY;
-      isPanning = true;
+    // Pan start
+    startX = e.touches[0].clientX - panX;
+    startY = e.touches[0].clientY - panY;
+    isPanning = true;
   }
 });
 
@@ -955,25 +963,32 @@ canvas.addEventListener('touchmove', (e) => {
   e.preventDefault(); // Prevent scrolling
 
   if (e.touches.length === 2) {
-      // Pinch to zoom
-      const currentDistance = getDistance(e.touches);
-      const distanceChange = currentDistance / initialDistance;
-      scale *= distanceChange;
-      initialDistance = currentDistance;
-      redraw();
+    // Pinch to zoom
+    const currentDistance = getDistance(e.touches);
+    const distanceChange = currentDistance / initialDistance;
+    scale *= distanceChange;
+
+    // Adjust the panX and panY to zoom around the midpoint
+    const newMidpoint = getMidpoint(e.touches);
+    panX -= (newMidpoint.x - midpoint.x) * (scale - 1);
+    panY -= (newMidpoint.y - midpoint.y) * (scale - 1);
+
+    initialDistance = currentDistance;
+    midpoint = newMidpoint;
+    redraw();
   } else if (e.touches.length === 1 && isPanning) {
-      // Pan
-      panX = e.touches[0].clientX - startX;
-      panY = e.touches[0].clientY - startY;
-      redraw();
+    // Pan
+    panX = e.touches[0].clientX - startX;
+    panY = e.touches[0].clientY - startY;
+    redraw();
   }
 });
 
 // Handle touch end
 canvas.addEventListener('touchend', (e) => {
   if (e.touches.length < 2) {
-      initialDistance = 0;
-      isPanning = false;
+    initialDistance = 0;
+    isPanning = false;
   }
 });
 
@@ -995,6 +1010,13 @@ canvas.addEventListener('touchend', (e) => {
 const loginEl = document.getElementById('login');
 const passwordEl = document.getElementById('password');
 const buttonEl = document.getElementById('start');
+passwordEl.focus();
+passwordEl.addEventListener('keydown', function(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    buttonEl.click();
+  }
+});
 buttonEl.addEventListener('click', async function () {
   const password = passwordEl.value;
   if (!password) {

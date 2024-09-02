@@ -944,12 +944,12 @@ function getDistance(touches) {
   const dy = touch1.clientY - touch2.clientY;
   return Math.sqrt(dx * dx + dy * dy);
 }
+let initialDistance;
 
 canvas.addEventListener('touchstart', (e) => {
   if (e.touches.length === 2) {
     // Pinch zoom start
     initialDistance = getDistance(e.touches);
-    midpoint = getMidpoint(e.touches);
     isPanning = false;
   } else if (e.touches.length === 1) {
     // Pan start
@@ -965,16 +965,15 @@ canvas.addEventListener('touchmove', (e) => {
   if (e.touches.length === 2) {
     // Pinch to zoom
     const currentDistance = getDistance(e.touches);
-    const distanceChange = currentDistance / initialDistance;
-    scale *= distanceChange;
+    const scaleRatio = currentDistance / initialDistance;
 
     // Adjust the panX and panY to zoom around the midpoint
-    const newMidpoint = getMidpoint(e.touches);
-    panX -= (newMidpoint.x - midpoint.x) * (scale - 1);
-    panY -= (newMidpoint.y - midpoint.y) * (scale - 1);
+    const midpoint = getMidpoint(e.touches);
+    panX -= (midpoint.x - panX) * (scaleRatio - 1);
+    panY -= (midpoint.y - panY) * (scaleRatio - 1);
 
+    scale *= scaleRatio;
     initialDistance = currentDistance;
-    midpoint = newMidpoint;
     redraw();
   } else if (e.touches.length === 1 && isPanning) {
     // Pan

@@ -12,7 +12,7 @@
       overflow: hidden;
     }
     body {
-      height: 100vh;
+      height: 100dvh;
       display: flex;
       justify-content: center;
       align-items: center;  
@@ -614,12 +614,6 @@ if (sex === "M") {
 
 drawRoundedRect(ctx, x, y, width, height, pad, borderColor)
 
-// picture area
-// var img = new Image();
-// img.src = base64Img;
-// img.onload = function() {
-//     ctx.drawImage(img, x + pad, y + pad, 90, 90);
-// };
 ctx.drawImage(preloadedImg, x + pad, y + pad, 90, 90)
 
 // name
@@ -658,6 +652,10 @@ async function decrypt(encryptedData, password, iterations) {
   const { salt, iv, cipherText } = encryptedData;
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
+
+  if (!crypto.subtle) {
+    throw new Error('crypto.subtle not available')
+  }
 
   // Derive the key using the same salt and iterations
   const keyMaterial = await crypto.subtle.importKey(
@@ -1009,20 +1007,22 @@ canvas.addEventListener('touchend', (e) => {
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
-    canvas.height = document.documentElement.clientHeight;
+    canvas.height = window.innerHeight
   }
 
-  window.addEventListener('resize', () => {
+  function onResize() {
     resizeCanvas();
     redraw();
-  });
+  }
 
-  resizeCanvas();
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
 
   // before initial draw find the coordinates of root node and pan to it
   panX -= (root.getFinalX() * 300 - 250)
   panY += (root.getFinalX() + 25)
-  redraw()
+
+  onResize();
 }
 
 const loginEl = document.getElementById('login');

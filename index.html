@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Drzewo Genealogiczne</title>
   <style type="text/css">
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -991,19 +996,23 @@ canvas.addEventListener('touchend', (e) => {
   }
 });
 
-  const CANVAS_NO_SCROLL = 4
+  const CANVAS_NO_SCROLL = 0
   function resizeCanvas() {
     canvas.width = window.innerWidth - CANVAS_NO_SCROLL;
     canvas.height = window.innerHeight - CANVAS_NO_SCROLL;
   }
 
-  resizeCanvas();
-  redraw()
-
   window.addEventListener('resize', () => {
     resizeCanvas();
     redraw();
   });
+
+  resizeCanvas();
+
+  // before initial draw find the coordinates of root node and pan to it
+  panX -= (root.getFinalX() * 300 - 250)
+  panY += (root.getFinalX() + 25)
+  redraw()
 }
 
 const loginEl = document.getElementById('login');

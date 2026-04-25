@@ -3195,6 +3195,126 @@ function getLang() { return _lang; }
 if (typeof module !== 'undefined') module.exports = { t, setLang, getLang };
 
 
+    const MONTH_MAP = {
+  // GEDCOM standard (English 3-letter abbreviations)
+  JAN:1, FEB:2, MAR:3, APR:4, MAY:5, JUN:6,
+  JUL:7, AUG:8, SEP:9, OCT:10, NOV:11, DEC:12,
+  // Polish — abbreviated (diacritics already stripped via normToken)
+  STY:1, LUT:2, /* MAR already above */ KWI:4, MAJ:5, CZE:6,
+  LIP:7, SIE:8, WRZ:9, PAZ:10, LIS:11, GRU:12,
+  // Polish — full nominative (diacritics stripped)
+  STYCZEN:1, LUTY:2, MARZEC:3, KWIECIEN:4, CZERWIEC:6,
+  LIPIEC:7, SIERPIEN:8, WRZESIEN:9, PAZDZIERNIK:10, LISTOPAD:11, GRUDZIEN:12,
+  // Polish — genitive (the form most commonly used when writing dates: "20 maja 1979")
+  STYCZNIA:1, LUTEGO:2, MARCA:3, KWIETNIA:4, MAJA:5, CZERWCA:6,
+  LIPCA:7, SIERPNIA:8, WRZESNIA:9, PAZDZIERNIKA:10, LISTOPADA:11, GRUDNIA:12,
+};
+
+const QUALIFIER_MAP = { ABT:'~', EST:'~', CAL:'~', BEF:'<', AFT:'>' };
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+// Strip diacritics and uppercase — handles Polish ą ę ó ś ź ż ć ń ł ź
+function normToken(s) {
+  return s.normalize('NFD').replace(/\p{Mn}/gu, '').toUpperCase();
+}
+
+function parseParts(str) {
+  if (!str) return null;
+  const tokens = str.trim().split(/\s+/).map(normToken);
+  let day, month, year;
+  for (const tok of tokens) {
+    if (MONTH_MAP[tok]) {
+      month = MONTH_MAP[tok];
+    } else if (/^\d{4}$/.test(tok)) {
+      year = parseInt(tok, 10);
+    } else if (/^\d{1,2}$/.test(tok) && day === undefined) {
+      day = parseInt(tok, 10);
+    }
+  }
+  if (!year) return null;
+  return { day, month, year };
+}
+
+function parseGedcomDate(str) {
+  if (!str || typeof str !== 'string') return null;
+  let s = str.trim();
+
+  // INT — strip keyword and trailing bracketed annotation
+  if (/^INT\s+/i.test(s)) {
+    s = s.replace(/^INT\s+/i, '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+    return parseParts(s);
+  }
+
+  // BET ... AND ...
+  const betMatch = s.match(/^BET\s+(.+?)\s+AND\s+(.+)$/i);
+  if (betMatch) {
+    const from = parseParts(betMatch[1]);
+    const to   = parseParts(betMatch[2]);
+    if (from || to) return { rangeFrom: from, rangeTo: to };
+    return null;
+  }
+
+  // FROM ... TO ...
+  const fromMatch = s.match(/^FROM\s+(.+?)\s+TO\s+(.+)$/i);
+  if (fromMatch) {
+    const from = parseParts(fromMatch[1]);
+    const to   = parseParts(fromMatch[2]);
+    if (from || to) return { rangeFrom: from, rangeTo: to };
+    return null;
+  }
+
+  // Qualifier prefix
+  const qualMatch = s.match(/^(ABT|EST|CAL|BEF|AFT)\s+(.+)$/i);
+  if (qualMatch) {
+    const qualifier = QUALIFIER_MAP[qualMatch[1].toUpperCase()];
+    const parts = parseParts(qualMatch[2]);
+    if (!parts) return null;
+    return { qualifier, ...parts };
+  }
+
+  return parseParts(s);
+}
+
+function formatParts(parts) {
+  if (!parts || !parts.year) return null;
+  if (parts.day && parts.month) return `${pad2(parts.day)}-${pad2(parts.month)}-${parts.year}`;
+  if (parts.month)              return `${pad2(parts.month)}-${parts.year}`;
+  return String(parts.year);
+}
+
+// Returns a display string. Falls back to the original string for unrecognised input.
+function formatGedcomDate(str) {
+  const parsed = parseGedcomDate(str);
+  if (!parsed) return str || '';
+
+  if (parsed.rangeFrom !== undefined) {
+    const from = formatParts(parsed.rangeFrom);
+    const to   = formatParts(parsed.rangeTo);
+    if (from && to) return `${from}–${to}`;
+    return from || to || (str || '');
+  }
+
+  const base = formatParts(parsed);
+  if (!base) return str || '';
+  return parsed.qualifier ? parsed.qualifier + base : base;
+}
+
+// Returns an ISO-ish sort key: "YYYY", "YYYY-MM", or "YYYY-MM-DD". Empty string if unparseable.
+function gedcomDateSortKey(str) {
+  const parsed = parseGedcomDate(str);
+  if (!parsed) return '';
+  const parts = parsed.rangeFrom || parsed;
+  if (!parts || !parts.year) return '';
+  const segs = [String(parts.year)];
+  if (parts.month) segs.push(pad2(parts.month));
+  if (parts.month && parts.day) segs.push(pad2(parts.day));
+  return segs.join('-');
+}
+
+if (typeof module !== 'undefined') module.exports = { parseGedcomDate, formatGedcomDate, gedcomDateSortKey };
+
+
     const coordinates = [];
 const toggleAreas = [];
 const addRelativeAreas = [];
@@ -3510,10 +3630,10 @@ function drawPerson(ctx, x, y, name, surname, dob, dod, preloadedImg, sex, selec
   const fontHeight2 = 11;
   ctx.font = fontHeight2 + 'px Monaco';
   if (dob) {
-    ctx.fillText(t('person.born') + dob, textX, textY + PERSON_PAD + 2 * fontHeight1 + PERSON_PAD);
+    ctx.fillText(t('person.born') + formatGedcomDate(dob), textX, textY + PERSON_PAD + 2 * fontHeight1 + PERSON_PAD);
   }
   if (dod) {
-    ctx.fillText(t('person.died') + dod, textX, textY + PERSON_PAD + 2 * fontHeight1 + PERSON_PAD + fontHeight2)
+    ctx.fillText(t('person.died') + formatGedcomDate(dod), textX, textY + PERSON_PAD + 2 * fontHeight1 + PERSON_PAD + fontHeight2);
   }
 
   if (personId) {
@@ -3533,13 +3653,11 @@ function drawPerson(ctx, x, y, name, surname, dob, dod, preloadedImg, sex, selec
   }
 }
 
-function compareDatesDob(p1,p2, reverse = false) {
-const dateA = p1.dob ? new Date(p1.dob.split('-').reverse().join('-')) : 0;
-const dateB = p2.dob ? new Date(p2.dob.split('-').reverse().join('-')) : 0;
-if (reverse) {
-  return dateB - dateA;
-}
-return dateA - dateB;
+function compareDatesDob(p1, p2, reverse = false) {
+  const keyA = p1.dob ? gedcomDateSortKey(p1.dob) : '';
+  const keyB = p2.dob ? gedcomDateSortKey(p2.dob) : '';
+  const cmp  = keyA < keyB ? -1 : keyA > keyB ? 1 : 0;
+  return reverse ? -cmp : cmp;
 }
 
 
@@ -4519,9 +4637,9 @@ async function main(data, canvas) {
     panelNameEl.textContent = person.givenname + ' ' + person.surname;
     if (window.familyTreeData) { panelIdEl.textContent = personId; panelIdEl.style.display = ''; }
     panelBirthEl.textContent = person.dob
-      ? t('person.born') + person.dob + (person.placeOfBirth ? ', ' + person.placeOfBirth : '')
+      ? t('person.born') + formatGedcomDate(person.dob) + (person.placeOfBirth ? ', ' + person.placeOfBirth : '')
       : '';
-    panelDeathEl.textContent = person.dod ? t('person.died') + person.dod : '';
+    panelDeathEl.textContent = person.dod ? t('person.died') + formatGedcomDate(person.dod) : '';
     panelEl.classList.add('open');
     redraw();
   }

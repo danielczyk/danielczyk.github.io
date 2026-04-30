@@ -509,6 +509,7 @@
     #add-relative-save   { background: var(--btn-primary); color: #fff; }
     #edit-save-btn:hover,
     #add-relative-save:hover { background: var(--btn-hover); }
+    #add-relative-save:disabled { background: var(--btn-disabled); cursor: default; }
     #edit-cancel-btn,
     #add-relative-cancel { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
     .settings-row {
@@ -935,6 +936,179 @@
       font-family: Arial, sans-serif;
       margin: 8px 0 0;
     }
+    #relation-btn {
+      top: 16px; right: 192px; position: fixed;
+    }
+    #relation-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100%;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 2px 0 8px var(--shadow);
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      z-index: 30;
+    }
+    #relation-panel.open { transform: translateX(0); }
+    #relation-close {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1;
+    }
+    #relation-panel h2 {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      margin: 0 0 16px;
+      padding-right: 24px;
+      color: var(--text);
+    }
+    .relation-slot {
+      margin-bottom: 16px;
+    }
+    .relation-slot-label {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .relation-selected {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: var(--surface-2);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .relation-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .relation-name {
+      flex: 1;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .relation-clear-slot {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 4px;
+      flex-shrink: 0;
+    }
+    .relation-clear-slot:hover { color: var(--text); }
+    .relation-search-box {
+      position: relative;
+    }
+    .relation-search-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      outline: none;
+    }
+    .relation-search-input:focus { border-color: var(--btn-primary); }
+    .relation-suggestions {
+      display: none;
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 0;
+      margin: 0;
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+    }
+    .relation-suggestions li {
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .relation-suggestions li:hover,
+    .relation-suggestions li.active { background: var(--surface-2); }
+    #relation-result {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    #relation-summary {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 12px;
+      line-height: 1.4;
+    }
+    #relation-steps {
+      margin: 6px 0 0 0;
+      padding: 0 0 0 18px;
+      color: var(--text);
+      line-height: 1.8;
+    }
+    #relation-clear-all {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+    }
+    #relation-clear-all:hover { color: var(--text); border-color: var(--text-muted); }
+    #panel-relation-btn {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 7px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+    #panel-relation-btn:hover { color: var(--text); border-color: var(--text-muted); }
     @media (max-width: 600px) {
       #search-container {
         top: 62px;
@@ -942,6 +1116,15 @@
         right: 16px;
         width: auto;
         transform: none;
+      }
+      #person-panel,
+      #add-relative-panel,
+      #birthday-panel,
+      #about-panel,
+      #settings-panel,
+      #data-panel,
+      #relation-panel {
+        width: 100%;
       }
     }
   </style>
@@ -952,6 +1135,7 @@
   <button id="about-btn">&#x2139;&#xFE0E;</button>
   <button id="settings-btn">&#9881;</button>
   <button id="data-btn">&#8862;<span id="data-badge"></span></button>
+  <button id="relation-btn" style="display:none;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--nav-btn-bg);color:var(--text);box-shadow:0 1px 4px var(--shadow);cursor:pointer;font-size:15px;align-items:center;justify-content:center;z-index:5">&#8596;</button>
   <div id="birthday-panel">
     <button id="birthday-close">&#x00D7;</button>
     <h2 data-i18n="birthday.title"></h2>
@@ -1075,6 +1259,7 @@
         </select>
       </label>
       <label data-i18n="rel.dob">  <input id="ar-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
+      <p id="ar-dob-warning" style="display:none;color:#c0392b;font-size:0.85em;margin:2px 0 4px"></p>
       <label data-i18n="rel.dod">  <input id="ar-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="rel.pob"> <input id="ar-pob" type="text"></label>
       <p id="add-relative-error" style="display:none"></p>
@@ -1084,6 +1269,47 @@
       </div>
     </form>
   </div>
+  <div id="relation-panel">
+    <button id="relation-close">&#x00D7;</button>
+    <h2 data-i18n="relation.panelTitle"></h2>
+
+    <div class="relation-slot">
+      <div class="relation-slot-label" data-i18n="relation.personA"></div>
+      <div class="relation-selected" id="relation-selected-a" style="display:none">
+        <img class="relation-thumb" id="relation-thumb-a" src="" alt="">
+        <span class="relation-name" id="relation-name-a"></span>
+        <button class="relation-clear-slot" id="relation-clear-a">&#x00D7;</button>
+      </div>
+      <div class="relation-search-box" id="relation-search-a">
+        <input type="text" id="relation-input-a" class="relation-search-input" autocomplete="off" spellcheck="false" data-i18n-placeholder="relation.placeholder">
+        <ul class="relation-suggestions" id="relation-suggestions-a"></ul>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:4px 0">
+      <button id="relation-swap-btn" title="Swap A and B" style="background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;padding:0">&#x21C5;</button>
+    </div>
+
+    <div class="relation-slot">
+      <div class="relation-slot-label" data-i18n="relation.personB"></div>
+      <div class="relation-selected" id="relation-selected-b" style="display:none">
+        <img class="relation-thumb" id="relation-thumb-b" src="" alt="">
+        <span class="relation-name" id="relation-name-b"></span>
+        <button class="relation-clear-slot" id="relation-clear-b">&#x00D7;</button>
+      </div>
+      <div class="relation-search-box" id="relation-search-b">
+        <input type="text" id="relation-input-b" class="relation-search-input" autocomplete="off" spellcheck="false" data-i18n-placeholder="relation.placeholder">
+        <ul class="relation-suggestions" id="relation-suggestions-b"></ul>
+      </div>
+    </div>
+
+    <div id="relation-result" style="display:none">
+      <p id="relation-summary"></p>
+      <ol id="relation-steps"></ol>
+      <button id="relation-clear-all" data-i18n="relation.clearAll"></button>
+    </div>
+  </div>
+
   <div id="person-panel">
     <div id="panel-header">
       <button id="panel-crosshair-btn" title="Set as home">&#x2316;</button>
@@ -1104,6 +1330,7 @@
         <p id="panel-birth"></p>
         <p id="panel-death"></p>
       </div>
+      <button id="panel-relation-btn" data-i18n="relation.addBtn"></button>
     </div>
     <form id="panel-edit-form" style="display:none">
       <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
@@ -1711,6 +1938,7 @@
     #add-relative-save   { background: var(--btn-primary); color: #fff; }
     #edit-save-btn:hover,
     #add-relative-save:hover { background: var(--btn-hover); }
+    #add-relative-save:disabled { background: var(--btn-disabled); cursor: default; }
     #edit-cancel-btn,
     #add-relative-cancel { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
     .settings-row {
@@ -2137,6 +2365,179 @@
       font-family: Arial, sans-serif;
       margin: 8px 0 0;
     }
+    #relation-btn {
+      top: 16px; right: 192px; position: fixed;
+    }
+    #relation-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100%;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 2px 0 8px var(--shadow);
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      z-index: 30;
+    }
+    #relation-panel.open { transform: translateX(0); }
+    #relation-close {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1;
+    }
+    #relation-panel h2 {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      margin: 0 0 16px;
+      padding-right: 24px;
+      color: var(--text);
+    }
+    .relation-slot {
+      margin-bottom: 16px;
+    }
+    .relation-slot-label {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .relation-selected {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: var(--surface-2);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .relation-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .relation-name {
+      flex: 1;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .relation-clear-slot {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 4px;
+      flex-shrink: 0;
+    }
+    .relation-clear-slot:hover { color: var(--text); }
+    .relation-search-box {
+      position: relative;
+    }
+    .relation-search-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      outline: none;
+    }
+    .relation-search-input:focus { border-color: var(--btn-primary); }
+    .relation-suggestions {
+      display: none;
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 0;
+      margin: 0;
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+    }
+    .relation-suggestions li {
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .relation-suggestions li:hover,
+    .relation-suggestions li.active { background: var(--surface-2); }
+    #relation-result {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    #relation-summary {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 12px;
+      line-height: 1.4;
+    }
+    #relation-steps {
+      margin: 6px 0 0 0;
+      padding: 0 0 0 18px;
+      color: var(--text);
+      line-height: 1.8;
+    }
+    #relation-clear-all {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+    }
+    #relation-clear-all:hover { color: var(--text); border-color: var(--text-muted); }
+    #panel-relation-btn {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 7px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+    #panel-relation-btn:hover { color: var(--text); border-color: var(--text-muted); }
     @media (max-width: 600px) {
       #search-container {
         top: 62px;
@@ -2144,6 +2545,15 @@
         right: 16px;
         width: auto;
         transform: none;
+      }
+      #person-panel,
+      #add-relative-panel,
+      #birthday-panel,
+      #about-panel,
+      #settings-panel,
+      #data-panel,
+      #relation-panel {
+        width: 100%;
       }
     }
   </style>
@@ -2154,6 +2564,7 @@
   <button id="about-btn">&#x2139;&#xFE0E;</button>
   <button id="settings-btn">&#9881;</button>
   <button id="data-btn">&#8862;<span id="data-badge"></span></button>
+  <button id="relation-btn" style="display:none;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--nav-btn-bg);color:var(--text);box-shadow:0 1px 4px var(--shadow);cursor:pointer;font-size:15px;align-items:center;justify-content:center;z-index:5">&#8596;</button>
   <div id="birthday-panel">
     <button id="birthday-close">&#x00D7;</button>
     <h2 data-i18n="birthday.title"></h2>
@@ -2277,6 +2688,7 @@
         </select>
       </label>
       <label data-i18n="rel.dob">  <input id="ar-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
+      <p id="ar-dob-warning" style="display:none;color:#c0392b;font-size:0.85em;margin:2px 0 4px"></p>
       <label data-i18n="rel.dod">  <input id="ar-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="rel.pob"> <input id="ar-pob" type="text"></label>
       <p id="add-relative-error" style="display:none"></p>
@@ -2286,6 +2698,47 @@
       </div>
     </form>
   </div>
+  <div id="relation-panel">
+    <button id="relation-close">&#x00D7;</button>
+    <h2 data-i18n="relation.panelTitle"></h2>
+
+    <div class="relation-slot">
+      <div class="relation-slot-label" data-i18n="relation.personA"></div>
+      <div class="relation-selected" id="relation-selected-a" style="display:none">
+        <img class="relation-thumb" id="relation-thumb-a" src="" alt="">
+        <span class="relation-name" id="relation-name-a"></span>
+        <button class="relation-clear-slot" id="relation-clear-a">&#x00D7;</button>
+      </div>
+      <div class="relation-search-box" id="relation-search-a">
+        <input type="text" id="relation-input-a" class="relation-search-input" autocomplete="off" spellcheck="false" data-i18n-placeholder="relation.placeholder">
+        <ul class="relation-suggestions" id="relation-suggestions-a"></ul>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:4px 0">
+      <button id="relation-swap-btn" title="Swap A and B" style="background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;padding:0">&#x21C5;</button>
+    </div>
+
+    <div class="relation-slot">
+      <div class="relation-slot-label" data-i18n="relation.personB"></div>
+      <div class="relation-selected" id="relation-selected-b" style="display:none">
+        <img class="relation-thumb" id="relation-thumb-b" src="" alt="">
+        <span class="relation-name" id="relation-name-b"></span>
+        <button class="relation-clear-slot" id="relation-clear-b">&#x00D7;</button>
+      </div>
+      <div class="relation-search-box" id="relation-search-b">
+        <input type="text" id="relation-input-b" class="relation-search-input" autocomplete="off" spellcheck="false" data-i18n-placeholder="relation.placeholder">
+        <ul class="relation-suggestions" id="relation-suggestions-b"></ul>
+      </div>
+    </div>
+
+    <div id="relation-result" style="display:none">
+      <p id="relation-summary"></p>
+      <ol id="relation-steps"></ol>
+      <button id="relation-clear-all" data-i18n="relation.clearAll"></button>
+    </div>
+  </div>
+
   <div id="person-panel">
     <div id="panel-header">
       <button id="panel-crosshair-btn" title="Set as home">&#x2316;</button>
@@ -2306,6 +2759,7 @@
         <p id="panel-birth"></p>
         <p id="panel-death"></p>
       </div>
+      <button id="panel-relation-btn" data-i18n="relation.addBtn"></button>
     </div>
     <form id="panel-edit-form" style="display:none">
       <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
@@ -3308,6 +3762,36 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'birthday.inDays':          (n) => `In ${n} days`,
     'birthday.turns':           (age) => `turns ${age}`,
     'birthday.wouldBe':         (age) => `would be ${age}`,
+
+    // Relationship finder panel
+    'relation.panelTitle':      'Relationship Finder',
+    'relation.personA':         'Person A',
+    'relation.personB':         'Person B',
+    'relation.placeholder':     'Search person…',
+    'relation.compute':         'Compute relationship',
+    'relation.clear':           'Clear',
+    'relation.clearAll':        'Clear all',
+    'relation.notFound':        'No connection found.',
+    'relation.addBtn':          'Add to relationship finder',
+    'relation.addedAsA':        'Added as Person A',
+    'relation.addedAsB':        'Added as Person B',
+    'relation.same':            'the same person',
+    'relation.child':           'child',
+    'relation.grandchild':      'grandchild',
+    'relation.parent':          'parent',
+    'relation.grandparent':     'grandparent',
+    'relation.greatPrefix':     'great-',
+    'relation.sibling':         'sibling',
+    'relation.uncle':           'uncle/aunt',
+    'relation.nephew':          'nephew/niece',
+    'relation.cousin1st':       '1st cousin',
+    'relation.cousin2nd':       '2nd cousin',
+    'relation.cousinNth':       (n) => `${n}th cousin`,
+    'relation.removed1':        'once removed',
+    'relation.removedN':        (n) => `${n} times removed`,
+    'relation.summary':         (a, rel, b) => `${a} is ${b}'s ${rel}`,
+    'relation.showSteps':       'Show path',
+    'relation.spouse':          'spouse',
   },
 
   pl: {
@@ -3372,7 +3856,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'rel.title':                'Dodaj krewnego do',
     'rel.relationship':         'Pokrewieństwo',
     'rel.child':                'Dziecko',
-    'rel.spouse':               'Małżonek',
+    'rel.spouse':               'Małżonek(a)/Partner(ka)',
     'rel.parent':               'Rodzic',
     'rel.sibling':              'Rodzeństwo',
     'rel.firstName':            'Imię',
@@ -3438,6 +3922,36 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'birthday.inDays':          (n) => `Za ${n} dni`,
     'birthday.turns':           (age) => `kończy ${age} lat`,
     'birthday.wouldBe':         (age) => `skończyłby/a ${age} lat`,
+
+    // Relationship finder panel
+    'relation.panelTitle':      'Znajdź pokrewieństwo',
+    'relation.personA':         'Osoba A',
+    'relation.personB':         'Osoba B',
+    'relation.placeholder':     'Szukaj osoby…',
+    'relation.compute':         'Oblicz pokrewieństwo',
+    'relation.clear':           'Wyczyść',
+    'relation.clearAll':        'Wyczyść wszystko',
+    'relation.notFound':        'Brak połączenia.',
+    'relation.addBtn':          'Dodaj do porównania',
+    'relation.addedAsA':        'Dodano jako Osoba A',
+    'relation.addedAsB':        'Dodano jako Osoba B',
+    'relation.same':            'ta sama osoba',
+    'relation.child':           'dziecko',
+    'relation.grandchild':      'wnuk/wnuczka',
+    'relation.parent':          'rodzic',
+    'relation.grandparent':     'dziadek/babcia',
+    'relation.greatPrefix':     'pra',
+    'relation.sibling':         'brat/siostra',
+    'relation.uncle':           'wujek/ciocia',
+    'relation.nephew':          'bratanek/siostrzenica',
+    'relation.cousin1st':       'kuzyn/kuzynka pierwszego stopnia',
+    'relation.cousin2nd':       'kuzyn/kuzynka drugiego stopnia',
+    'relation.cousinNth':       (n) => `kuzyn/kuzynka ${n}. stopnia`,
+    'relation.removed1':        'raz oddalony/a',
+    'relation.removedN':        (n) => `${n} razy oddalony/a`,
+    'relation.summary':         (a, rel, b) => `${a} jest ${rel} ${b}`,
+    'relation.showSteps':       'Pokaż ścieżkę',
+    'relation.spouse':          'małżonek/małżonka/partner/partnerka',
   },
 };
 
@@ -3578,6 +4092,100 @@ function gedcomDateSortKey(str) {
 }
 
 if (typeof module !== 'undefined') module.exports = { parseGedcomDate, formatGedcomDate, gedcomDateSortKey };
+
+
+    function getNeighbours(personId, pMap, fMap) {
+  const person = pMap[personId];
+  if (!person) return [];
+  const results = [];
+  for (const famsPointer of [].concat(person.fams || [])) {
+    const fam = fMap[famsPointer];
+    if (!fam) continue;
+    if (fam.husband && fam.husband !== personId && pMap[fam.husband])
+      results.push({ id: fam.husband, via: 'spouse' });
+    if (fam.wife && fam.wife !== personId && pMap[fam.wife])
+      results.push({ id: fam.wife, via: 'spouse' });
+    for (const childId of (fam.children || [])) {
+      if (pMap[childId]) results.push({ id: childId, via: 'child' });
+    }
+  }
+  const famc = person.famc ? fMap[person.famc] : null;
+  if (famc) {
+    if (famc.husband && pMap[famc.husband]) results.push({ id: famc.husband, via: 'parent' });
+    if (famc.wife    && pMap[famc.wife   ]) results.push({ id: famc.wife,   via: 'parent' });
+  }
+  return results;
+}
+
+function findRelationPath(fromId, toId, pMap, fMap) {
+  if (fromId === toId) return [fromId];
+  const visited = new Set([fromId]);
+  const queue = [[fromId]];
+  while (queue.length) {
+    const path = queue.shift();
+    if (path.length > 20) continue;
+    const current = path[path.length - 1];
+    for (const { id } of getNeighbours(current, pMap, fMap)) {
+      if (visited.has(id)) continue;
+      const newPath = [...path, id];
+      if (id === toId) return newPath;
+      visited.add(id);
+      queue.push(newPath);
+    }
+  }
+  return null;
+}
+
+function classifyPath(path, pMap, fMap) {
+  const steps = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    const xId = path[i];
+    const yId = path[i + 1];
+    const x = pMap[xId];
+    const famcOfX = x && x.famc ? fMap[x.famc] : null;
+    if (famcOfX && (famcOfX.husband === yId || famcOfX.wife === yId)) {
+      steps.push('UP');
+    } else {
+      const isChild = [].concat((x && x.fams) || []).some(
+        fp => fMap[fp] && (fMap[fp].children || []).includes(yId)
+      );
+      steps.push(isChild ? 'DOWN' : 'SPOUSE');
+    }
+  }
+  const lastUp    = steps.lastIndexOf('UP');
+  const pivotIdx  = lastUp === -1 ? 0 : lastUp + 1;
+  const genA = steps.slice(0, pivotIdx).filter(s => s === 'UP').length;
+  const genB = steps.slice(pivotIdx).filter(s => s === 'DOWN').length;
+  const hasSpouseLink = steps.includes('SPOUSE');
+  return { genA, genB, pivotIdx, hasSpouseLink, steps };
+}
+
+// Returns a structured label object — translate to human text in the caller.
+// type: 'same'|'child'|'grandchild'|'parent'|'grandparent'|'sibling'|'uncle'|'nephew'|'cousin'
+// grandchild/grandparent include `greats` (0=grand, 1=great-grand, …)
+// cousin includes `degree` (1=first, 2=second, …) and `removal` (0, 1, …)
+// genA = steps from A UP to the LCA; genB = steps from LCA DOWN to B.
+// The returned label describes what A IS from B's perspective
+// (for use in the template "{A} is {B}'s {label}").
+function formalRelationshipLabel(genA, genB) {
+  if (genA === 0 && genB === 0) return { type: 'same' };
+  // A is an ancestor of B — A is above B
+  if (genA === 0 && genB === 1) return { type: 'parent' };
+  if (genA === 0) return { type: 'grandparent', greats: genB - 2 };
+  // A is a descendant of B — A is below B
+  if (genB === 0 && genA === 1) return { type: 'child' };
+  if (genB === 0) return { type: 'grandchild', greats: genA - 2 };
+  if (genA === 1 && genB === 1) return { type: 'sibling' };
+  if (genA === 1 && genB === 2) return { type: 'uncle' };
+  if (genA === 2 && genB === 1) return { type: 'nephew' };
+  const degree  = Math.min(genA, genB) - 1;
+  const removal = Math.abs(genA - genB);
+  return { type: 'cousin', degree, removal };
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = { getNeighbours, findRelationPath, classifyPath, formalRelationshipLabel };
+}
 
 
     const coordinates = [];
@@ -3771,6 +4379,59 @@ function drawNode(ctx, node) {
     const p = node.data[0];
     drawPerson(ctx, x, y, p.givenname, p.surname, p.dob, p.dod, p.img, p.sex, p.id === selectedPersonId, p.id);
     addPersonToCoordinates(p.id, x, y);
+
+    if (node.children.length > 0) {
+      let parentX, parentY;
+      if (isLR) {
+        parentX = x + PERSON_WIDTH;
+        parentY = node._y * LR_MY;
+      } else {
+        parentX = x + PERSON_WIDTH / 2;
+        parentY = y + PERSON_HEIGHT;
+      }
+
+      if (!isCollapsed) {
+        for (const child of node.children) {
+          if (isLR) {
+            const childLeft = child._x * mx;
+            let childY;
+            if (child.type === 'couple') {
+              const lrPersonOffset = COUPLE_VERT_HEIGHT / 2 - PERSON_HEIGHT / 2;
+              const idx = child.data[0].famc === node.fams ? 0 : 1;
+              childY = child._y * LR_MY + (idx === 0 ? -lrPersonOffset : lrPersonOffset);
+            } else if (child.type === 'chain') {
+              const lrSlot    = PERSON_HEIGHT + COUPLE_DIST;
+              const totalH    = child.data.length * PERSON_HEIGHT + (child.data.length - 1) * COUPLE_DIST;
+              const chainTopY = child._y * LR_MY - totalH / 2;
+              const idx       = child.data.findIndex(cp => cp.famc === node.fams);
+              childY = chainTopY + (idx >= 0 ? idx : 0) * lrSlot + PERSON_HEIGHT / 2;
+            } else {
+              childY = child._y * LR_MY;
+            }
+            const midX = (x + PERSON_WIDTH + childLeft) / 2;
+            drawParentsChildEdge(ctx,
+              parentX, parentY, midX, parentY, midX, childY, childLeft, childY,
+              currentTheme.edge, 10, false);
+          } else {
+            const childX = childConnectionX(child, node.fams);
+            const childY = child._y * my;
+            const downDistance = childY - parentY;
+            const round = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
+            drawParentsChildEdge(ctx,
+              parentX, parentY,
+              parentX, parentY + downDistance / 2,
+              childX,  childY - downDistance / 2,
+              childX,  childY,
+              currentTheme.edge, 10, round);
+          }
+        }
+      }
+
+      const toggleX = isLR ? parentX + 20 : parentX;
+      const toggleY = isLR ? parentY       : parentY + 20;
+      drawToggleButton(ctx, toggleX, toggleY, isCollapsed);
+      toggleAreas.push({ nodeId: node.id, nodeRef: node, x: toggleX, y: toggleY, r: 14 });
+    }
   }
 
   if (node.type === 'couple') {
@@ -5201,6 +5862,43 @@ async function main(data, canvas) {
   const addRelativeErrorEl  = document.getElementById('add-relative-error');
   const addRelativeCloseEl  = document.getElementById('add-relative-close');
   const addRelativeCancelEl = document.getElementById('add-relative-cancel');
+  const arDobEl             = document.getElementById('ar-dob');
+  const arDobWarnEl         = document.getElementById('ar-dob-warning');
+  const addRelativeSaveEl   = document.getElementById('add-relative-save');
+
+  function extractYear(dateStr) {
+    if (!dateStr) return null;
+    const m = dateStr.match(/\b(\d{4})\b/);
+    return m ? parseInt(m[1], 10) : null;
+  }
+
+  function validateChildDob() {
+    const rel = document.querySelector('input[name="rel"]:checked').value;
+    if (rel !== 'child') {
+      arDobWarnEl.style.display = 'none';
+      addRelativeSaveEl.disabled = false;
+      return;
+    }
+    const parentPerson = pMap[addingRelativeToId];
+    const parentYear = parentPerson ? extractYear(parentPerson.dob) : null;
+    const childYear  = extractYear(arDobEl.value.trim());
+    let warning = null;
+    if (parentYear !== null && childYear !== null) {
+      if (childYear < parentYear) {
+        warning = 'The child was born before the parent — please check the date.';
+      } else if (childYear < parentYear + 10) {
+        warning = `The child was born when the parent was only ${childYear - parentYear} year(s) old — please check the date.`;
+      }
+    }
+    if (warning) {
+      arDobWarnEl.textContent = warning;
+      arDobWarnEl.style.display = '';
+      addRelativeSaveEl.disabled = true;
+    } else {
+      arDobWarnEl.style.display = 'none';
+      addRelativeSaveEl.disabled = false;
+    }
+  }
 
   let addingRelativeToId = null;
 
@@ -5209,10 +5907,15 @@ async function main(data, canvas) {
     const p = pMap[personId];
     addRelativeTitleEl.textContent = `${t('rel.title')} ${p ? p.givenname + ' ' + p.surname : personId}`;
     addRelativeErrorEl.style.display = 'none';
+    arDobWarnEl.style.display = 'none';
+    addRelativeSaveEl.disabled = false;
     addRelativeFormEl.reset();
     closePanel();
     addRelativePanelEl.classList.add('open');
   }
+
+  arDobEl.addEventListener('input', validateChildDob);
+  document.querySelectorAll('input[name="rel"]').forEach(r => r.addEventListener('change', validateChildDob));
 
   addRelativeCloseEl.addEventListener('click',  () => addRelativePanelEl.classList.remove('open'));
   addRelativeCancelEl.addEventListener('click', () => addRelativePanelEl.classList.remove('open'));
@@ -5959,6 +6662,265 @@ async function main(data, canvas) {
     scheduleSave();
     redraw();
   });
+
+  // ── Relationship finder ───────────────────────────────────────────────────
+  const RELATION_A_KEY = 'familyTree.relationA';
+  const RELATION_B_KEY = 'familyTree.relationB';
+  let relationA = localStorage.getItem(RELATION_A_KEY) || null;
+  let relationB = localStorage.getItem(RELATION_B_KEY) || null;
+
+  const relationBtn         = document.getElementById('relation-btn');
+  const relationPanelEl     = document.getElementById('relation-panel');
+  const relationCloseEl     = document.getElementById('relation-close');
+  const relationSelectedA   = document.getElementById('relation-selected-a');
+  const relationThumbA      = document.getElementById('relation-thumb-a');
+  const relationNameA       = document.getElementById('relation-name-a');
+  const relationClearA      = document.getElementById('relation-clear-a');
+  const relationSearchA     = document.getElementById('relation-search-a');
+  const relationInputA      = document.getElementById('relation-input-a');
+  const relationSuggestionsA = document.getElementById('relation-suggestions-a');
+  const relationSelectedB   = document.getElementById('relation-selected-b');
+  const relationThumbB      = document.getElementById('relation-thumb-b');
+  const relationNameB       = document.getElementById('relation-name-b');
+  const relationClearB      = document.getElementById('relation-clear-b');
+  const relationSearchB     = document.getElementById('relation-search-b');
+  const relationInputB      = document.getElementById('relation-input-b');
+  const relationSuggestionsB = document.getElementById('relation-suggestions-b');
+  const relationResult      = document.getElementById('relation-result');
+  const relationSummaryEl   = document.getElementById('relation-summary');
+  const relationStepsEl     = document.getElementById('relation-steps');
+  const relationClearAllEl  = document.getElementById('relation-clear-all');
+  const panelRelationBtn    = document.getElementById('panel-relation-btn');
+
+  function computeRelation() {
+    if (!relationA || !relationB || !pMap[relationA] || !pMap[relationB]) {
+      relationResult.style.display = 'none';
+      return;
+    }
+    const path = findRelationPath(relationA, relationB, pMap, fMap);
+    if (!path) {
+      relationSummaryEl.textContent = t('relation.notFound');
+      relationStepsEl.innerHTML = '';
+    } else {
+      const { genA, genB, hasSpouseLink } = classifyPath(path, pMap, fMap);
+      const nameA = (pMap[relationA].givenname + ' ' + pMap[relationA].surname).trim() || relationA;
+      const nameB = (pMap[relationB].givenname + ' ' + pMap[relationB].surname).trim() || relationB;
+      if (hasSpouseLink) {
+        relationSummaryEl.textContent = nameA + ' — ' + nameB;
+      } else {
+        const label = formatRelationLabel(formalRelationshipLabel(genA, genB));
+        relationSummaryEl.textContent = label ? t('relation.summary', nameA, label, nameB) : nameA + ' — ' + nameB;
+      }
+      renderRelationSteps(path);
+    }
+    relationResult.style.display = '';
+  }
+
+  function renderRelationSlot(slot, personId) {
+    const person = pMap[personId];
+    if (!person) return;
+    if (slot === 'a') {
+      relationThumbA.src = person.base64Img;
+      relationNameA.textContent = (person.givenname + ' ' + person.surname).trim();
+      relationSelectedA.style.display = 'flex';
+      relationSearchA.style.display = 'none';
+      relationInputA.value = '';
+    } else {
+      relationThumbB.src = person.base64Img;
+      relationNameB.textContent = (person.givenname + ' ' + person.surname).trim();
+      relationSelectedB.style.display = 'flex';
+      relationSearchB.style.display = 'none';
+      relationInputB.value = '';
+    }
+    computeRelation();
+  }
+
+  function clearRelationSlot(slot) {
+    if (slot === 'a') {
+      relationA = null;
+      localStorage.removeItem(RELATION_A_KEY);
+      relationSelectedA.style.display = 'none';
+      relationSearchA.style.display = '';
+    } else {
+      relationB = null;
+      localStorage.removeItem(RELATION_B_KEY);
+      relationSelectedB.style.display = 'none';
+      relationSearchB.style.display = '';
+    }
+    computeRelation();
+  }
+
+  function restoreRelationSlots() {
+    if (relationA && pMap[relationA]) renderRelationSlot('a', relationA);
+    else { relationA = null; localStorage.removeItem(RELATION_A_KEY); }
+    if (relationB && pMap[relationB]) renderRelationSlot('b', relationB);
+    else { relationB = null; localStorage.removeItem(RELATION_B_KEY); }
+  }
+
+  function formatRelationLabel(label) {
+    if (!label) return null;
+    const { type, greats, degree, removal } = label;
+    const great = (n) => (t('relation.greatPrefix')).repeat(n > 0 ? n : 0);
+    switch (type) {
+      case 'same':       return t('relation.same');
+      case 'child':      return t('relation.child');
+      case 'grandchild': return great(greats) + t('relation.grandchild');
+      case 'parent':     return t('relation.parent');
+      case 'grandparent':return great(greats) + t('relation.grandparent');
+      case 'sibling':    return t('relation.sibling');
+      case 'uncle':      return t('relation.uncle');
+      case 'nephew':     return t('relation.nephew');
+      case 'cousin': {
+        const degStr = degree === 1 ? t('relation.cousin1st')
+                     : degree === 2 ? t('relation.cousin2nd')
+                     : t('relation.cousinNth', degree);
+        if (removal === 0) return degStr;
+        const remStr = removal === 1 ? t('relation.removed1') : t('relation.removedN', removal);
+        return degStr + ', ' + remStr;
+      }
+      default: return null;
+    }
+  }
+
+  function renderRelationSteps(path) {
+    relationStepsEl.innerHTML = '';
+    for (let i = 0; i < path.length; i++) {
+      const id = path[i];
+      const person = pMap[id];
+      const name = person ? (person.givenname + ' ' + person.surname).trim() || id : id;
+      const li = document.createElement('li');
+      if (i < path.length - 1) {
+        const next = path[i + 1];
+        const nb = getNeighbours(id, pMap, fMap).find(n => n.id === next);
+        const via = nb ? nb.via : '—';
+        const viaLabel = via === 'parent' ? t('relation.parent')
+                       : via === 'child'  ? t('relation.child')
+                       : t('relation.spouse');
+        li.textContent = `${name} (${viaLabel} →)`;
+      } else {
+        li.textContent = name;
+      }
+      relationStepsEl.appendChild(li);
+    }
+  }
+
+  function makeRelationSuggestionHandler(slot, inputEl, suggestionsEl) {
+    let activeSuggIdx = -1;
+
+    function hideSuggestions() {
+      suggestionsEl.style.display = 'none';
+      activeSuggIdx = -1;
+    }
+
+    function renderSuggestions(items) {
+      suggestionsEl.innerHTML = '';
+      if (items.length === 0) { hideSuggestions(); return; }
+      items.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.year ? `${item.label} (${item.year})` : item.label;
+        li.addEventListener('mousedown', e => {
+          e.preventDefault();
+          if (slot === 'a') { relationA = item.id; localStorage.setItem(RELATION_A_KEY, item.id); }
+          else              { relationB = item.id; localStorage.setItem(RELATION_B_KEY, item.id); }
+          renderRelationSlot(slot, item.id);
+          hideSuggestions();
+        });
+        suggestionsEl.appendChild(li);
+      });
+      suggestionsEl.style.display = 'block';
+      activeSuggIdx = -1;
+    }
+
+    inputEl.addEventListener('input', () => {
+      const q = inputEl.value.trim();
+      if (!q) { hideSuggestions(); return; }
+      const nq = normaliseSearch(q);
+      renderSuggestions(searchIndex.filter(item => normaliseSearch(item.label).includes(nq)).slice(0, 10));
+    });
+
+    inputEl.addEventListener('keydown', e => {
+      const lis = suggestionsEl.querySelectorAll('li');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeSuggIdx = Math.min(activeSuggIdx + 1, lis.length - 1);
+        lis.forEach((li, i) => li.classList.toggle('active', i === activeSuggIdx));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeSuggIdx = Math.max(activeSuggIdx - 1, 0);
+        lis.forEach((li, i) => li.classList.toggle('active', i === activeSuggIdx));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const target = lis[activeSuggIdx >= 0 ? activeSuggIdx : 0];
+        if (target) target.dispatchEvent(new MouseEvent('mousedown'));
+      } else if (e.key === 'Escape') {
+        inputEl.value = '';
+        hideSuggestions();
+      }
+    });
+
+    inputEl.addEventListener('blur', () => setTimeout(hideSuggestions, 150));
+  }
+
+  makeRelationSuggestionHandler('a', relationInputA, relationSuggestionsA);
+  makeRelationSuggestionHandler('b', relationInputB, relationSuggestionsB);
+
+  relationClearA.addEventListener('click', () => clearRelationSlot('a'));
+  relationClearB.addEventListener('click', () => clearRelationSlot('b'));
+
+  document.getElementById('relation-swap-btn').addEventListener('click', () => {
+    [relationA, relationB] = [relationB, relationA];
+    localStorage.setItem(RELATION_A_KEY, relationA || '');
+    localStorage.setItem(RELATION_B_KEY, relationB || '');
+    if (!relationA) localStorage.removeItem(RELATION_A_KEY);
+    if (!relationB) localStorage.removeItem(RELATION_B_KEY);
+    // Re-render both slots from scratch
+    relationSelectedA.style.display = 'none';
+    relationSearchA.style.display = '';
+    relationSelectedB.style.display = 'none';
+    relationSearchB.style.display = '';
+    if (relationA) renderRelationSlot('a', relationA);
+    if (relationB) renderRelationSlot('b', relationB);
+    computeRelation();
+  });
+
+  relationClearAllEl.addEventListener('click', () => {
+    clearRelationSlot('a');
+    clearRelationSlot('b');
+  });
+
+  relationCloseEl.addEventListener('click', () => relationPanelEl.classList.remove('open'));
+
+  relationBtn.style.display = 'flex';
+  relationBtn.addEventListener('click', () => {
+    if (relationPanelEl.classList.contains('open')) {
+      relationPanelEl.classList.remove('open');
+    } else {
+      [birthdayPanel, aboutPanel, settingsPanel, dataPanel].forEach(p => p.classList.remove('open'));
+      restoreRelationSlots();
+      relationPanelEl.classList.add('open');
+    }
+  });
+
+  panelRelationBtn.addEventListener('click', () => {
+    if (!currentPersonId) return;
+    let slot;
+    if (!relationA) {
+      slot = 'a';
+      relationA = currentPersonId;
+      localStorage.setItem(RELATION_A_KEY, currentPersonId);
+    } else {
+      slot = 'b';
+      relationB = currentPersonId;
+      localStorage.setItem(RELATION_B_KEY, currentPersonId);
+    }
+    renderRelationSlot(slot, currentPersonId);
+
+    // Brief visual feedback on the button
+    panelRelationBtn.textContent = slot === 'a' ? t('relation.addedAsA') : t('relation.addedAsB');
+    setTimeout(() => { panelRelationBtn.textContent = t('relation.addBtn'); }, 1500);
+  });
+
+  restoreRelationSlots();
 
   onResize();
 

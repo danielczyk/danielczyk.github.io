@@ -209,7 +209,7 @@
     #data-btn.visible {
       display: flex;
     }
-    #birthday-badge {
+    #data-badge {
       display: none;
       position: absolute;
       top: 4px;
@@ -415,7 +415,8 @@
       margin-bottom: 8px;
       min-height: 32px;
     }
-    #panel-edit-btn {
+    #panel-edit-btn,
+    #panel-crosshair-btn {
       background: none;
       border: none;
       color: var(--text-muted);
@@ -426,7 +427,9 @@
       margin-right: 4px;
       border-radius: 4px;
     }
-    #panel-edit-btn:hover { color: var(--text); background: var(--surface-2); }
+    #panel-edit-btn:hover,
+    #panel-crosshair-btn:hover { color: var(--text); background: var(--surface-2); }
+    #panel-crosshair-btn.pinned { color: var(--btn-primary, #3498db); }
     #panel-img-wrap {
       position: relative;
       width: fit-content;
@@ -767,6 +770,36 @@
       font-size: 14px;
     }
     #remove-modal-confirm:hover { background: #a93226; }
+    #saved-locally-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 201;
+      align-items: center;
+      justify-content: center;
+    }
+    #saved-locally-donotshow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+    #saved-locally-donotshow input { cursor: pointer; }
+    #saved-locally-ok {
+      background: var(--btn-primary, #3498db);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #saved-locally-ok:hover { opacity: 0.9; }
     #reset-edits-modal {
       display: none;
       position: fixed;
@@ -915,10 +948,10 @@
 </head>
 <body>
   <script>if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');</script>
-  <button id="birthday-btn" style="position:fixed"><span style="filter:grayscale(1)">&#127874;</span><span id="birthday-badge"></span></button>
+  <button id="birthday-btn" style="position:fixed"><span style="filter:grayscale(1)">&#127874;</span></button>
   <button id="about-btn">&#x2139;&#xFE0E;</button>
   <button id="settings-btn">&#9881;</button>
-  <button id="data-btn">&#8862;</button>
+  <button id="data-btn">&#8862;<span id="data-badge"></span></button>
   <div id="birthday-panel">
     <button id="birthday-close">&#x00D7;</button>
     <h2 data-i18n="birthday.title"></h2>
@@ -951,6 +984,14 @@
       <select id="lang-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
         <option value="en">EN</option>
         <option value="pl">PL</option>
+      </select>
+    </div>
+    <hr>
+    <div class="toggle-row" style="margin-top:4px">
+      <span data-i18n="settings.layout"></span>
+      <select id="layout-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
+        <option value="TD" data-i18n="settings.layout.td"></option>
+        <option value="LR" data-i18n="settings.layout.lr"></option>
       </select>
     </div>
   </div>
@@ -1033,8 +1074,8 @@
           <option value="other" data-i18n="person.other"></option>
         </select>
       </label>
-      <label data-i18n="rel.dob">  <input id="ar-dob" type="text" placeholder="17 JAN 1950"></label>
-      <label data-i18n="rel.dod">  <input id="ar-dod" type="text" placeholder="17 JAN 1950"></label>
+      <label data-i18n="rel.dob">  <input id="ar-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
+      <label data-i18n="rel.dod">  <input id="ar-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="rel.pob"> <input id="ar-pob" type="text"></label>
       <p id="add-relative-error" style="display:none"></p>
       <div class="edit-actions">
@@ -1045,6 +1086,7 @@
   </div>
   <div id="person-panel">
     <div id="panel-header">
+      <button id="panel-crosshair-btn" title="Set as home">&#x2316;</button>
       <button id="panel-edit-btn" title="Edit">&#x270E;</button>
       <button id="panel-close">&#x00D7;</button>
     </div>
@@ -1066,8 +1108,8 @@
     <form id="panel-edit-form" style="display:none">
       <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
       <label data-i18n="person.lastName">  <input id="edit-surname"   type="text"></label>
-      <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" placeholder="17 JAN 1950"></label>
-      <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" placeholder="17 JAN 1950"></label>
+      <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" data-i18n-placeholder="date.placeholder"></label>
+      <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="person.birthplace"> <input id="edit-pob"       type="text"></label>
       <label data-i18n="person.sex">
         <select id="edit-sex">
@@ -1090,6 +1132,18 @@
       <button id="crop-zoom-out">&#x2212;</button>
       <button id="crop-zoom-in">+</button>
       <button id="crop-apply" data-i18n="crop.apply"></button>
+    </div>
+  </div>
+  <div id="saved-locally-modal">
+    <div id="remove-modal-box">
+      <p data-i18n="savedLocally.text"></p>
+      <label id="saved-locally-donotshow">
+        <input type="checkbox" id="saved-locally-checkbox">
+        <span data-i18n="savedLocally.doNotShow"></span>
+      </label>
+      <div id="remove-modal-actions">
+        <button id="saved-locally-ok" data-i18n="savedLocally.ok"></button>
+      </div>
     </div>
   </div>
   <div id="remove-modal">
@@ -1357,7 +1411,7 @@
     #data-btn.visible {
       display: flex;
     }
-    #birthday-badge {
+    #data-badge {
       display: none;
       position: absolute;
       top: 4px;
@@ -1563,7 +1617,8 @@
       margin-bottom: 8px;
       min-height: 32px;
     }
-    #panel-edit-btn {
+    #panel-edit-btn,
+    #panel-crosshair-btn {
       background: none;
       border: none;
       color: var(--text-muted);
@@ -1574,7 +1629,9 @@
       margin-right: 4px;
       border-radius: 4px;
     }
-    #panel-edit-btn:hover { color: var(--text); background: var(--surface-2); }
+    #panel-edit-btn:hover,
+    #panel-crosshair-btn:hover { color: var(--text); background: var(--surface-2); }
+    #panel-crosshair-btn.pinned { color: var(--btn-primary, #3498db); }
     #panel-img-wrap {
       position: relative;
       width: fit-content;
@@ -1915,6 +1972,36 @@
       font-size: 14px;
     }
     #remove-modal-confirm:hover { background: #a93226; }
+    #saved-locally-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 201;
+      align-items: center;
+      justify-content: center;
+    }
+    #saved-locally-donotshow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+    #saved-locally-donotshow input { cursor: pointer; }
+    #saved-locally-ok {
+      background: var(--btn-primary, #3498db);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #saved-locally-ok:hover { opacity: 0.9; }
     #reset-edits-modal {
       display: none;
       position: fixed;
@@ -2063,10 +2150,10 @@
 </head>
 <body>
   <script>if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');<\/script>
-  <button id="birthday-btn" style="position:fixed"><span style="filter:grayscale(1)">&#127874;</span><span id="birthday-badge"></span></button>
+  <button id="birthday-btn" style="position:fixed"><span style="filter:grayscale(1)">&#127874;</span></button>
   <button id="about-btn">&#x2139;&#xFE0E;</button>
   <button id="settings-btn">&#9881;</button>
-  <button id="data-btn">&#8862;</button>
+  <button id="data-btn">&#8862;<span id="data-badge"></span></button>
   <div id="birthday-panel">
     <button id="birthday-close">&#x00D7;</button>
     <h2 data-i18n="birthday.title"></h2>
@@ -2099,6 +2186,14 @@
       <select id="lang-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
         <option value="en">EN</option>
         <option value="pl">PL</option>
+      </select>
+    </div>
+    <hr>
+    <div class="toggle-row" style="margin-top:4px">
+      <span data-i18n="settings.layout"></span>
+      <select id="layout-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
+        <option value="TD" data-i18n="settings.layout.td"></option>
+        <option value="LR" data-i18n="settings.layout.lr"></option>
       </select>
     </div>
   </div>
@@ -2181,8 +2276,8 @@
           <option value="other" data-i18n="person.other"></option>
         </select>
       </label>
-      <label data-i18n="rel.dob">  <input id="ar-dob" type="text" placeholder="17 JAN 1950"></label>
-      <label data-i18n="rel.dod">  <input id="ar-dod" type="text" placeholder="17 JAN 1950"></label>
+      <label data-i18n="rel.dob">  <input id="ar-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
+      <label data-i18n="rel.dod">  <input id="ar-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="rel.pob"> <input id="ar-pob" type="text"></label>
       <p id="add-relative-error" style="display:none"></p>
       <div class="edit-actions">
@@ -2193,6 +2288,7 @@
   </div>
   <div id="person-panel">
     <div id="panel-header">
+      <button id="panel-crosshair-btn" title="Set as home">&#x2316;</button>
       <button id="panel-edit-btn" title="Edit">&#x270E;</button>
       <button id="panel-close">&#x00D7;</button>
     </div>
@@ -2214,8 +2310,8 @@
     <form id="panel-edit-form" style="display:none">
       <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
       <label data-i18n="person.lastName">  <input id="edit-surname"   type="text"></label>
-      <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" placeholder="17 JAN 1950"></label>
-      <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" placeholder="17 JAN 1950"></label>
+      <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" data-i18n-placeholder="date.placeholder"></label>
+      <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="person.birthplace"> <input id="edit-pob"       type="text"></label>
       <label data-i18n="person.sex">
         <select id="edit-sex">
@@ -2238,6 +2334,18 @@
       <button id="crop-zoom-out">&#x2212;</button>
       <button id="crop-zoom-in">+</button>
       <button id="crop-apply" data-i18n="crop.apply"></button>
+    </div>
+  </div>
+  <div id="saved-locally-modal">
+    <div id="remove-modal-box">
+      <p data-i18n="savedLocally.text"></p>
+      <label id="saved-locally-donotshow">
+        <input type="checkbox" id="saved-locally-checkbox">
+        <span data-i18n="savedLocally.doNotShow"></span>
+      </label>
+      <div id="remove-modal-actions">
+        <button id="saved-locally-ok" data-i18n="savedLocally.ok"></button>
+      </div>
     </div>
   </div>
   <div id="remove-modal">
@@ -2552,7 +2660,7 @@ if (typeof module !== 'undefined') {
     this.id = id;
     this._x = x;
     this._y = y;
-    this._mod = 0
+    this._mod = 0;
     if (type === 'single') {
       this.width = 200;
     } else if (type === 'couple') {
@@ -2564,166 +2672,66 @@ if (typeof module !== 'undefined') {
       this.width = 200;
     }
     this.height = 100;
-    this.children = [] // so later we can traverse the graph
+    this.children = [];
     this._parent = null;
     this.type = type;
-    this.data = data; // array with people
+    this.data = data;
     this.dataIndex = dataIndex;
-    this.fams = fams
+    this.fams = fams;
     this.famsArray = famsArray || null;
   }
 
-  getParent() {
-    return this._parent;
-  }
-  setParent(parent) {
-    this._parent = parent;
-  }
-  setX(x) {
-    this._x += x;
-  }
-  setY(y) {
-    this._y += y;
-  }
-  getX() {
-    return this._x;
+  getParent() { return this._parent; }
+  setParent(parent) { this._parent = parent; }
+
+  setX(x) { this._x += x; }
+  setY(y) { this._y += y; }
+  getX() { return this._x; }
+  getMod() {
+    let mod = this._mod;
+    if (this._parent) mod += this._parent.getMod();
+    return mod;
   }
   getFinalX() {
     let x = this._x;
-    if (this._parent) {
-      x += this._parent.getMod()
-    }
+    if (this._parent) x += this._parent.getMod();
     return x;
   }
-  getFinalY() {
-    return this._y;
-  }
-  getMod() {
-    let mod = this._mod;
-    if (this._parent) {
-      mod += this._parent.getMod()
-    }
-    return mod;
-  }
+  getFinalY() { return this._y; }
 
-  isLeaf() {
-    return this.children.length === 0;
-  }
-
-  isSingle() {
-    return this._parent.children[0] === this && this._parent.children.length === 1;
-  }
+  isLeaf() { return this.children.length === 0; }
+  isSingle() { return this._parent.children[0] === this && this._parent.children.length === 1; }
 
   isLeftMost() {
-    if (this._parent === null) {
-      return true;
-    }
-    return this._parent.children[0] === this;
+    return this._parent === null || this._parent.children[0] === this;
   }
-
   isRightMost() {
-    if (this._parent === null) {
-      return true;
-    }
-
-    return this._parent.children[this._parent.children.length - 1] === this;
+    return this._parent === null || this._parent.children[this._parent.children.length - 1] === this;
   }
-
   getPreviousSibling() {
-    if (this._parent === null || this.isLeftMost()) {
-      return null;
-    }
+    if (this._parent === null || this.isLeftMost()) return null;
     return this._parent.children[this._parent.children.indexOf(this) - 1];
   }
-
-  getLeftMostChild() {
-    if (this.children.length === 0) {
-      return null;
-    }
-    return this.children[0];
-  }
-
-  getRightMostChild() {
-    if (this.children.length === 0) {
-      return null;
-    }
-    return this.children[this.children.length - 1];
-  }
-
-  getLeftMostSibling() {
-    if (this._parent === null) {
-      return null;
-    }
-
-    if (this.isLeftMost()) {
-      return this;
-    }
-
-    return this._parent.children[0];
-  }
-
   getNextSibling() {
-    if (this._parent === null || this.isRightMost()) {
-      return null;
-    }
-    const ownIndex = this._parent.children.indexOf(this)
-    return this._parent.children[ownIndex + 1];
+    if (this._parent === null || this.isRightMost()) return null;
+    return this._parent.children[this._parent.children.indexOf(this) + 1];
   }
-
+  getLeftMostChild() { return this.children.length === 0 ? null : this.children[0]; }
+  getRightMostChild() { return this.children.length === 0 ? null : this.children[this.children.length - 1]; }
+  getLeftMostSibling() {
+    if (this._parent === null) return null;
+    return this.isLeftMost() ? this : this._parent.children[0];
+  }
 }
 
-const NODE_SIZE = 0;
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = { Node };
+}
+
+
+    const NODE_SIZE = 0;
 const SIBLING_DISTANCE = 1;
-const TREE_DISTANCE = 1
-
-
-function addToLayer(node, layers) {
-  for (const child of node.children) {
-    addToLayer(child, layers)
-  }
-  if (!layers[node._y]) {
-    layers[node._y] = [];
-  }
-  layers[node._y].push(node)
-}
-
-function printLayerByLayer(rootNode) {
-  const layers = [];
-  addToLayer(rootNode, layers)
-
-  let coordinates = ''
-  let dots = '';
-  for (const layer of layers) {
-    const dotsArray = []
-    for (const node of layer) {
-      coordinates += `${node.id} x:${node._x}/mod:${node._mod},   `
-      const n = (node._x + 1) * 4;
-      for (let i = 0; i < n; i++) {
-        if (i < n - 1 && dotsArray[i] === undefined) {
-          dotsArray.push(' ');
-        } else if (i < n - 1 && dotsArray[i] !== undefined) {
-          // do nothing
-        } else {
-          const nodeId = '' + node.id;
-          dotsArray.push(' ' + nodeId.substring(0,1));
-        }
-      }
-    }
-    coordinates += '\n'
-    dots += dotsArray.join('') + '\n'
-  }
-  console.log(coordinates)
-  console.log(dots)
-}
-
-function initializeDepth(node, depth) {
-  node._x = -1;
-  node._y = depth;
-  node._mod = 0;
-  for (const child of node.children) {
-    initializeDepth(child, depth + 1);
-  }
-}
+const TREE_DISTANCE = 1;
 
 function getLeftContour(node, modSum, contourMap) {
   if (contourMap[node._y] === undefined) {
@@ -2731,11 +2739,8 @@ function getLeftContour(node, modSum, contourMap) {
   } else {
     contourMap[node._y] = Math.min(contourMap[node._y], node._x + modSum);
   }
-
   modSum += node._mod;
-  for(const child of node.children) {
-    getLeftContour(child, modSum, contourMap);
-  }
+  for (const child of node.children) getLeftContour(child, modSum, contourMap);
 }
 
 function getRightContour(node, modSum, contourMap) {
@@ -2744,137 +2749,93 @@ function getRightContour(node, modSum, contourMap) {
   } else {
     contourMap[node._y] = Math.max(contourMap[node._y], node._x + modSum);
   }
-
   modSum += node._mod;
-  for(const child of node.children) {
-    getRightContour(child, modSum, contourMap);
-  }
+  for (const child of node.children) getRightContour(child, modSum, contourMap);
 }
 
 function centerNodesBetween(leftNode, rightNode) {
-
-    const children = leftNode._parent.children;
-    const leftIndex = children.indexOf(leftNode);
-    const rightIndex = children.indexOf(rightNode);
-    const numNodesBetween = (rightIndex - leftIndex) - 1;
-    if (numNodesBetween > 0) {
-      const distanceBetweenNodes = (rightNode._x - leftNode._x) / (numNodesBetween + 1);
-      let count = 1;
-      for (let i = leftIndex + 1; i < rightIndex; i++) {
-          const middleNode = children[i];
-          const desiredX = leftNode._x + (distanceBetweenNodes * count);
-          const offset = desiredX - middleNode._x;
-          if (offset > 0) {
-            middleNode._x += offset;
-            middleNode._mod += offset;
-          }
-          count++;
+  const children = leftNode._parent.children;
+  const leftIndex = children.indexOf(leftNode);
+  const rightIndex = children.indexOf(rightNode);
+  const numNodesBetween = (rightIndex - leftIndex) - 1;
+  if (numNodesBetween > 0) {
+    const distanceBetweenNodes = (rightNode._x - leftNode._x) / (numNodesBetween + 1);
+    let count = 1;
+    for (let i = leftIndex + 1; i < rightIndex; i++) {
+      const middleNode = children[i];
+      const desiredX = leftNode._x + (distanceBetweenNodes * count);
+      const offset = desiredX - middleNode._x;
+      if (offset > 0) {
+        middleNode._x += offset;
+        middleNode._mod += offset;
       }
-      checkForConflicts(rightNode);
+      count++;
     }
+    checkForConflicts(rightNode);
+  }
 }
 
 function checkForConflicts(node) {
   const minDistance = TREE_DISTANCE + NODE_SIZE;
   let shiftValue = 0;
-
-  const nodeContourMap = {}
+  const nodeContourMap = {};
   getLeftContour(node, 0, nodeContourMap);
   let sibling = node.getLeftMostSibling();
-
   while (sibling !== null && sibling !== node) {
     const siblingContourMap = {};
     getRightContour(sibling, 0, siblingContourMap);
-    const maxNodeContourLevels = Math.max(...Object.keys(nodeContourMap))
-    const maxSiblingContourLevel = Math.max(...Object.keys(siblingContourMap))
-    const maxLevel = Math.min(maxSiblingContourLevel, maxNodeContourLevels)
+    const maxLevel = Math.min(
+      Math.max(...Object.keys(siblingContourMap)),
+      Math.max(...Object.keys(nodeContourMap))
+    );
     for (let level = node._y + 1; level <= maxLevel; level++) {
       const distance = nodeContourMap[level] - siblingContourMap[level];
-      if (distance + shiftValue < minDistance) {
-        shiftValue = minDistance - distance;
-      }
+      if (distance + shiftValue < minDistance) shiftValue = minDistance - distance;
     }
-
     if (shiftValue > 0) {
-      console.log('YES conflict with ' + sibling.id )
-      console.log('shifting by ', shiftValue)
       node._x += shiftValue;
       node._mod += shiftValue;
       centerNodesBetween(sibling, node);
       shiftValue = 0;
-    } else {
-      console.log('NO conflict with ' + sibling.id)
     }
-
     sibling = sibling.getNextSibling();
   }
 }
 
 function calculateInitialX(node) {
-  for (const child of node.children) {
-    calculateInitialX(child);
-  }
-  console.log('==== Initial values for node ' + node.id)
+  for (const child of node.children) calculateInitialX(child);
 
   if (node.isLeaf()) {
-    console.log('node is a leaf')
-    if (node.isLeftMost()) {
-      console.log('node is a left most')
-      node._x = 0;
-    } else {
-      console.log('node is NOT a left most')
-      node._x = node.getPreviousSibling()._x + NODE_SIZE + SIBLING_DISTANCE;
-    }
-
+    node._x = node.isLeftMost() ? 0 : node.getPreviousSibling()._x + NODE_SIZE + SIBLING_DISTANCE;
   } else if (node.children.length === 1) {
-    console.log('node has one child')
-
-    // if this is the first node in a set, set it's X value equal to it's child's X value
     if (node.isLeftMost()) {
-      console.log('node is a left most')
       node._x = node.children[0]._x;
     } else {
-      console.log('node is NOT a left most')
       node._x = node.getPreviousSibling()._x + NODE_SIZE + SIBLING_DISTANCE;
       node._mod = node._x - node.children[0]._x;
     }
-
   } else {
-    console.log('node has many children')
-
     const leftChild = node.getLeftMostChild();
     const rightChild = node.getRightMostChild();
     const mid = (leftChild._x + rightChild._x) / 2;
-
     if (node.isLeftMost()) {
-      console.log('node is a left most')
       node._x = mid;
     } else {
-      console.log('node is NOT a left most')
       node._x = node.getPreviousSibling()._x + NODE_SIZE + SIBLING_DISTANCE;
       node._mod = node._x - mid;
     }
-
   }
 
-  if (node.children.length > 0 && !node.isLeftMost()) {
-    console.log('node HAS children and it is NOT left most checking for conflicts')
-    // Subtrees can overlap, check for conflicts and shift node and its children right
-    checkForConflicts(node);
-  }
+  if (node.children.length > 0 && !node.isLeftMost()) checkForConflicts(node);
 }
 
 function checkAllChildrenOnScreen(node) {
-  var nodeContourMap = {}
+  const nodeContourMap = {};
   getLeftContour(node, 0, nodeContourMap);
-
   let shiftAmount = 0;
-  for(const y of Object.keys(nodeContourMap)) {
-    if (nodeContourMap[y] + shiftAmount < 0) {
-      shiftAmount = nodeContourMap[y] * -1;
-    }
+  for (const y of Object.keys(nodeContourMap)) {
+    if (nodeContourMap[y] + shiftAmount < 0) shiftAmount = nodeContourMap[y] * -1;
   }
-
   if (shiftAmount > 0) {
     node._x += shiftAmount;
     node._mod += shiftAmount;
@@ -2884,10 +2845,14 @@ function checkAllChildrenOnScreen(node) {
 function calculateFinalPositions(node, modSum) {
   node._x += modSum;
   modSum += node._mod;
+  for (const child of node.children) calculateFinalPositions(child, modSum);
+}
 
-  for (const child of node.children) {
-    calculateFinalPositions(child, modSum);
-  }
+function initializeDepth(node, depth) {
+  node._x = -1;
+  node._y = depth;
+  node._mod = 0;
+  for (const child of node.children) initializeDepth(child, depth + 1);
 }
 
 function computeLayout(rootNode) {
@@ -2897,14 +2862,180 @@ function computeLayout(rootNode) {
   calculateFinalPositions(rootNode, 0);
 }
 
+// Debug helper kept for tests
+function addToLayer(node, layers) {
+  for (const child of node.children) addToLayer(child, layers);
+  if (!layers[node._y]) layers[node._y] = [];
+  layers[node._y].push(node);
+}
+
+function printLayerByLayer(rootNode) {
+  const layers = [];
+  addToLayer(rootNode, layers);
+  let coordinates = '';
+  let dots = '';
+  for (const layer of layers) {
+    const dotsArray = [];
+    for (const node of layer) {
+      coordinates += `${node.id} x:${node._x}/mod:${node._mod},   `;
+      const n = (node._x + 1) * 4;
+      for (let i = 0; i < n; i++) {
+        if (i < n - 1 && dotsArray[i] === undefined) dotsArray.push(' ');
+        else if (i < n - 1) { /* keep existing */ }
+        else dotsArray.push(' ' + ('' + node.id).substring(0, 1));
+      }
+    }
+    coordinates += '\n';
+    dots += dotsArray.join('') + '\n';
+  }
+  console.log(coordinates);
+  console.log(dots);
+}
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  // for tests in nodejs
-  module.exports = {
-    Node,
-    computeLayout,
-    printLayerByLayer
-  };
+  module.exports = { computeLayout, printLayerByLayer };
+}
+
+
+    // Left-to-right layout: generations flow left→right (X = depth),
+// siblings spread top→bottom (Y = Buchheim-computed position).
+// This produces a tall, narrow tree instead of a wide, shallow one.
+
+const LR_NODE_SIZE = 0;
+const LR_SIBLING_DISTANCE = 1;
+const LR_TREE_DISTANCE = 1;
+
+function lrGetTopContour(node, modSum, contourMap) {
+  if (contourMap[node._x] === undefined) {
+    contourMap[node._x] = node._y + modSum;
+  } else {
+    contourMap[node._x] = Math.min(contourMap[node._x], node._y + modSum);
+  }
+  modSum += node._modY;
+  for (const child of node.children) lrGetTopContour(child, modSum, contourMap);
+}
+
+function lrGetBottomContour(node, modSum, contourMap) {
+  if (contourMap[node._x] === undefined) {
+    contourMap[node._x] = node._y + modSum;
+  } else {
+    contourMap[node._x] = Math.max(contourMap[node._x], node._y + modSum);
+  }
+  modSum += node._modY;
+  for (const child of node.children) lrGetBottomContour(child, modSum, contourMap);
+}
+
+function lrCenterNodesBetween(topNode, bottomNode) {
+  const children = topNode._parent.children;
+  const topIndex = children.indexOf(topNode);
+  const bottomIndex = children.indexOf(bottomNode);
+  const numNodesBetween = (bottomIndex - topIndex) - 1;
+  if (numNodesBetween > 0) {
+    const distanceBetweenNodes = (bottomNode._y - topNode._y) / (numNodesBetween + 1);
+    let count = 1;
+    for (let i = topIndex + 1; i < bottomIndex; i++) {
+      const middleNode = children[i];
+      const desiredY = topNode._y + (distanceBetweenNodes * count);
+      const offset = desiredY - middleNode._y;
+      if (offset > 0) {
+        middleNode._y += offset;
+        middleNode._modY += offset;
+      }
+      count++;
+    }
+    lrCheckForConflicts(bottomNode);
+  }
+}
+
+function lrCheckForConflicts(node) {
+  const minDistance = LR_TREE_DISTANCE + LR_NODE_SIZE;
+  let shiftValue = 0;
+  const nodeContourMap = {};
+  lrGetTopContour(node, 0, nodeContourMap);
+  let sibling = node.getLeftMostSibling(); // "leftmost" = topmost in LR orientation
+  while (sibling !== null && sibling !== node) {
+    const siblingContourMap = {};
+    lrGetBottomContour(sibling, 0, siblingContourMap);
+    const maxLevel = Math.min(
+      Math.max(...Object.keys(siblingContourMap)),
+      Math.max(...Object.keys(nodeContourMap))
+    );
+    for (let level = node._x + 1; level <= maxLevel; level++) {
+      const distance = nodeContourMap[level] - siblingContourMap[level];
+      if (distance + shiftValue < minDistance) shiftValue = minDistance - distance;
+    }
+    if (shiftValue > 0) {
+      node._y += shiftValue;
+      node._modY += shiftValue;
+      lrCenterNodesBetween(sibling, node);
+      shiftValue = 0;
+    }
+    sibling = sibling.getNextSibling();
+  }
+}
+
+function lrCalculateInitialY(node) {
+  for (const child of node.children) lrCalculateInitialY(child);
+
+  if (node.isLeaf()) {
+    node._y = node.isLeftMost() ? 0 : node.getPreviousSibling()._y + LR_NODE_SIZE + LR_SIBLING_DISTANCE;
+  } else if (node.children.length === 1) {
+    if (node.isLeftMost()) {
+      node._y = node.children[0]._y;
+    } else {
+      node._y = node.getPreviousSibling()._y + LR_NODE_SIZE + LR_SIBLING_DISTANCE;
+      node._modY = node._y - node.children[0]._y;
+    }
+  } else {
+    const topChild    = node.getLeftMostChild();
+    const bottomChild = node.getRightMostChild();
+    const mid = (topChild._y + bottomChild._y) / 2;
+    if (node.isLeftMost()) {
+      node._y = mid;
+    } else {
+      node._y = node.getPreviousSibling()._y + LR_NODE_SIZE + LR_SIBLING_DISTANCE;
+      node._modY = node._y - mid;
+    }
+  }
+
+  if (node.children.length > 0 && !node.isLeftMost()) lrCheckForConflicts(node);
+}
+
+function lrCheckAllChildrenOnScreen(node) {
+  const nodeContourMap = {};
+  lrGetTopContour(node, 0, nodeContourMap);
+  let shiftAmount = 0;
+  for (const x of Object.keys(nodeContourMap)) {
+    if (nodeContourMap[x] + shiftAmount < 0) shiftAmount = nodeContourMap[x] * -1;
+  }
+  if (shiftAmount > 0) {
+    node._y += shiftAmount;
+    node._modY += shiftAmount;
+  }
+}
+
+function lrCalculateFinalPositions(node, modSum) {
+  node._y += modSum;
+  modSum += node._modY;
+  for (const child of node.children) lrCalculateFinalPositions(child, modSum);
+}
+
+function lrInitializeDepth(node, depth) {
+  node._x = depth;  // depth IS the x coordinate in LR layout
+  node._y = -1;
+  node._modY = 0;
+  for (const child of node.children) lrInitializeDepth(child, depth + 1);
+}
+
+function computeLayoutLR(rootNode) {
+  lrInitializeDepth(rootNode, 0);
+  lrCalculateInitialY(rootNode);
+  lrCheckAllChildrenOnScreen(rootNode);
+  lrCalculateFinalPositions(rootNode, 0);
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = { computeLayoutLR };
 }
 
 
@@ -3047,6 +3178,9 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'settings.title':           'Settings',
     'settings.darkMode':        'Dark mode',
     'settings.language':        'Language',
+    'settings.layout':          'Tree layout',
+    'settings.layout.td':       'Top-down (wide)',
+    'settings.layout.lr':       'Left-to-right (tall)',
 
     // Data panel
     'data.localEdits':          'Local edits',
@@ -3087,6 +3221,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'person.lastName':          'Last name',
     'person.born.label':        'Born',
     'person.died.label':        'Died',
+    'date.placeholder':         'DD MMM YYYY',
     'person.birthplace':        'Birthplace',
     'person.sex':               'Sex',
     'person.male':              'Male',
@@ -3126,6 +3261,11 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'remove.suffix':            '? This cannot be undone locally.',
     'remove.confirm':           'Remove',
     'remove.cancel':            'Cancel',
+
+    // Saved locally modal
+    'savedLocally.text':        'Your changes were saved locally. To make them permanent, visit the "Data" panel where you can send them to the administrator.',
+    'savedLocally.doNotShow':   'Do not show this message anymore',
+    'savedLocally.ok':          'Got it',
 
     // Reset modal
     'reset.text':               'Reset all local edits? All your changes will be permanently lost on this device and cannot be recovered.',
@@ -3181,6 +3321,9 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'settings.title':           'Ustawienia',
     'settings.darkMode':        'Tryb ciemny',
     'settings.language':        'Język',
+    'settings.layout':          'Układ drzewa',
+    'settings.layout.td':       'Z góry na dół (szeroki)',
+    'settings.layout.lr':       'Od lewej do prawej (wysoki)',
 
     'data.localEdits':          'Lokalne zmiany',
     'data.noEdits':             'Nie wprowadzono jeszcze żadnych lokalnych zmian. Gdy to zrobisz, pojawią się tutaj i będzie można je wysłać do administratora.',
@@ -3218,6 +3361,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'person.lastName':          'Nazwisko',
     'person.born.label':        'Urodzony/a',
     'person.died.label':        'Zmarły/a',
+    'date.placeholder':         'DD MMM RRRR',
     'person.birthplace':        'Miejsce urodzenia',
     'person.sex':               'Płeć',
     'person.male':              'Mężczyzna',
@@ -3252,6 +3396,11 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'remove.suffix':            '? Tej operacji nie można cofnąć lokalnie.',
     'remove.confirm':           'Usuń',
     'remove.cancel':            'Anuluj',
+
+    // Saved locally modal
+    'savedLocally.text':        'Twoje zmiany zostały zapisane lokalnie. Aby uczynić je trwałymi, przejdź do panelu "Dane", skąd możesz wysłać je do administratora.',
+    'savedLocally.doNotShow':   'Nie pokazuj więcej tej wiadomości',
+    'savedLocally.ok':          'Rozumiem',
 
     'reset.text':               'Zresetować wszystkie lokalne zmiany? Zostaną trwale utracone na tym urządzeniu i nie będzie można ich odzyskać.',
     'reset.confirm':            'Resetuj wszystkie zmiany',
@@ -3438,6 +3587,7 @@ const collapsedNodes = new Set();
 const nodeMap = new Map();
 const originalChildren = new Map();
 let selectedPersonId = null;
+let layoutDirection  = 'TD'; // 'TD' (top-down) | 'LR' (left-to-right)
 
 const PERSON_WIDTH = 200
 const PERSON_HEIGHT = 100
@@ -3469,8 +3619,10 @@ const THEMES = {
 
 let currentTheme = THEMES.light;
 
-const mx = 500
+const mx = 500;
 const my = 250;
+const LR_MY = 300; // vertical slot height in LR mode; must exceed COUPLE_VERT_HEIGHT
+const COUPLE_VERT_HEIGHT = PERSON_HEIGHT * 2 + COUPLE_DIST; // 250 — stacked couple height in LR
 
 
 
@@ -3610,8 +3762,9 @@ function drawNode(ctx, node) {
 
   const width = node.width;
   const height = node.height;
-  const x = node._x * mx - width / 2;
-  const y = node._y * my;
+  const isLR = layoutDirection === 'LR';
+  const x = isLR ? node._x * mx                        : node._x * mx - width / 2;
+  const y = isLR ? node._y * LR_MY - height / 2        : node._y * my;
   const pChildren = {};
 
   if (node.type === 'single') {
@@ -3622,88 +3775,186 @@ function drawNode(ctx, node) {
 
   if (node.type === 'couple') {
     const p1 = node.data[0];
-    drawPerson(ctx, x, y, p1.givenname, p1.surname, p1.dob, p1.dod, p1.img, p1.sex, p1.id === selectedPersonId, p1.id);
-    addPersonToCoordinates(p1.id, x, y);
-
     const p2 = node.data[1];
-    drawPerson(ctx, x + PERSON_WIDTH + COUPLE_DIST, y, p2.givenname, p2.surname, p2.dob, p2.dod, p2.img, p2.sex, p2.id === selectedPersonId, p2.id);
-    addPersonToCoordinates(p2.id, x + PERSON_WIDTH + COUPLE_DIST, y);
 
-    drawLine(ctx, x + PERSON_WIDTH, y + PERSON_HEIGHT / 2, x + PERSON_WIDTH + COUPLE_DIST, y + PERSON_HEIGHT / 2, currentTheme.edge);
-    pChildren.x = x + PERSON_WIDTH + COUPLE_DIST / 2;
-    pChildren.y = y + PERSON_HEIGHT / 2;
+    if (isLR) {
+      // Vertical arrangement: husband on top, wife below
+      const coupleTopY = node._y * LR_MY - COUPLE_VERT_HEIGHT / 2;
+      const wifeY      = coupleTopY + PERSON_HEIGHT + COUPLE_DIST;
+      drawPerson(ctx, x, coupleTopY, p1.givenname, p1.surname, p1.dob, p1.dod, p1.img, p1.sex, p1.id === selectedPersonId, p1.id);
+      addPersonToCoordinates(p1.id, x, coupleTopY);
+      drawPerson(ctx, x, wifeY, p2.givenname, p2.surname, p2.dob, p2.dod, p2.img, p2.sex, p2.id === selectedPersonId, p2.id);
+      addPersonToCoordinates(p2.id, x, wifeY);
+      // Vertical bond line between the two persons
+      drawLine(ctx, x + PERSON_WIDTH / 2, coupleTopY + PERSON_HEIGHT, x + PERSON_WIDTH / 2, wifeY, currentTheme.edge);
+      pChildren.x = x + PERSON_WIDTH / 2;
+      pChildren.y = node._y * LR_MY;
+    } else {
+      drawPerson(ctx, x, y, p1.givenname, p1.surname, p1.dob, p1.dod, p1.img, p1.sex, p1.id === selectedPersonId, p1.id);
+      addPersonToCoordinates(p1.id, x, y);
+      drawPerson(ctx, x + PERSON_WIDTH + COUPLE_DIST, y, p2.givenname, p2.surname, p2.dob, p2.dod, p2.img, p2.sex, p2.id === selectedPersonId, p2.id);
+      addPersonToCoordinates(p2.id, x + PERSON_WIDTH + COUPLE_DIST, y);
+      drawLine(ctx, x + PERSON_WIDTH, y + PERSON_HEIGHT / 2, x + PERSON_WIDTH + COUPLE_DIST, y + PERSON_HEIGHT / 2, currentTheme.edge);
+      pChildren.x = x + PERSON_WIDTH + COUPLE_DIST / 2;
+      pChildren.y = y + PERSON_HEIGHT / 2;
+    }
 
     if (!isCollapsed) {
       for (const child of node.children) {
-        const childX = childConnectionX(child, node.fams);
-        const childY = child._y * my;
-        const downDistance = childY - pChildren.y;
-        const round = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
-        drawParentsChildEdge(ctx,
-          pChildren.x, pChildren.y,
-          pChildren.x, pChildren.y + downDistance / 2,
-          childX, childY - downDistance / 2,
-          childX, childY,
-          currentTheme.edge, 10, round
-        );
+        if (isLR) {
+          const childLeft = child._x * mx;
+          const childX = childLeft;
+          let childY;
+          if (child.type === 'couple') {
+            const lrPersonOffset = COUPLE_VERT_HEIGHT / 2 - PERSON_HEIGHT / 2;
+            const idx = child.data[0].famc === node.fams ? 0 : 1;
+            childY = child._y * LR_MY + (idx === 0 ? -lrPersonOffset : lrPersonOffset);
+          } else if (child.type === 'chain') {
+            const lrSlot    = PERSON_HEIGHT + COUPLE_DIST;
+            const totalH    = child.data.length * PERSON_HEIGHT + (child.data.length - 1) * COUPLE_DIST;
+            const chainTopY = child._y * LR_MY - totalH / 2;
+            const idx       = child.data.findIndex(p => p.famc === node.fams);
+            childY = chainTopY + (idx >= 0 ? idx : 0) * lrSlot + PERSON_HEIGHT / 2;
+          } else {
+            childY = child._y * LR_MY;
+          }
+          const midX = (x + PERSON_WIDTH + childLeft) / 2;
+          drawParentsChildEdge(ctx,
+            pChildren.x, pChildren.y,
+            midX, pChildren.y,
+            midX, childY,
+            childX, childY,
+            currentTheme.edge, 10, false
+          );
+        } else {
+          const childX = childConnectionX(child, node.fams);
+          const childY = child._y * my;
+          const downDistance = childY - pChildren.y;
+          const round = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
+          drawParentsChildEdge(ctx,
+            pChildren.x, pChildren.y,
+            pChildren.x, pChildren.y + downDistance / 2,
+            childX, childY - downDistance / 2,
+            childX, childY,
+            currentTheme.edge, 10, round
+          );
+        }
       }
     }
 
     if (node.children.length > 0) {
-      const toggleX = pChildren.x;
-      const toggleY = pChildren.y + 20;
+      const toggleX = isLR ? pChildren.x + 20 : pChildren.x;
+      const toggleY = isLR ? pChildren.y       : pChildren.y + 20;
       drawToggleButton(ctx, toggleX, toggleY, isCollapsed);
       toggleAreas.push({ nodeId: node.id, nodeRef: node, x: toggleX, y: toggleY, r: 14 });
     }
   }
 
   if (node.type === 'chain') {
-    const nodeY    = node._y * my;
-    const midY     = nodeY + PERSON_HEIGHT / 2;
-    const leftX    = node._x * mx - node.width / 2;
+    const n         = node.data.length;
     const sharedIdx = node.dataIndex;
 
-    for (let k = 0; k < node.data.length; k++) {
-      const p  = node.data[k];
-      const px = leftX + k * (PERSON_WIDTH + COUPLE_DIST);
-      drawPerson(ctx, px, nodeY, p.givenname, p.surname, p.dob, p.dod, p.img, p.sex, p.id === selectedPersonId, p.id);
-      addPersonToCoordinates(p.id, px, nodeY);
+    if (isLR) {
+      // LR mode: stack persons vertically, bond lines vertical, children exit right
+      const lrSlot    = PERSON_HEIGHT + COUPLE_DIST;          // 150px per person slot
+      const totalH    = n * PERSON_HEIGHT + (n - 1) * COUPLE_DIST;
+      const chainTopY = node._y * LR_MY - totalH / 2;
 
-      if (k < node.data.length - 1) {
-        const x1 = px + PERSON_WIDTH;
-        const x2 = x1 + COUPLE_DIST;
-        const isDirect = k === sharedIdx || k + 1 === sharedIdx;
-        if (isDirect) {
-          drawLine(ctx, x1, midY, x2, midY, currentTheme.edge);
-        } else {
-          drawDashedLine(ctx, x1, midY, x2, midY, currentTheme.edge);
-        }
-      }
-    }
+      for (let k = 0; k < n; k++) {
+        const p  = node.data[k];
+        const py = chainTopY + k * lrSlot;
+        drawPerson(ctx, x, py, p.givenname, p.surname, p.dob, p.dod, p.img, p.sex, p.id === selectedPersonId, p.id);
+        addPersonToCoordinates(p.id, x, py);
 
-    for (let k = 0; k < (node.famsArray || []).length; k++) {
-      const famPointer     = node.famsArray[k];
-      const famChildren    = (node.childrenByFam || {})[famPointer] || [];
-      const isFamCollapsed = collapsedNodes.has(node.id + '_' + famPointer);
-      const dropX = leftX + k * (PERSON_WIDTH + COUPLE_DIST) + PERSON_WIDTH + COUPLE_DIST / 2;
-
-      if (!isFamCollapsed) {
-        for (const child of famChildren) {
-          const childX    = childConnectionX(child, famPointer);
-          const childY    = child._y * my;
-          const downDist  = childY - midY;
-          const round     = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
-          drawParentsChildEdge(ctx,
-            dropX, midY, dropX, midY + downDist / 2,
-            childX, childY - downDist / 2, childX, childY,
-            currentTheme.edge, 10, round
-          );
+        if (k < n - 1) {
+          const isDirect = k === sharedIdx || k + 1 === sharedIdx;
+          const bondFromY = py + PERSON_HEIGHT;
+          const bondToY   = py + lrSlot;
+          if (isDirect) {
+            drawLine(ctx, x + PERSON_WIDTH / 2, bondFromY, x + PERSON_WIDTH / 2, bondToY, currentTheme.edge);
+          } else {
+            drawDashedLine(ctx, x + PERSON_WIDTH / 2, bondFromY, x + PERSON_WIDTH / 2, bondToY, currentTheme.edge);
+          }
         }
       }
 
-      if (famChildren.length > 0) {
-        drawToggleButton(ctx, dropX, midY + 20, isFamCollapsed);
-        toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node, x: dropX, y: midY + 20, r: 14 });
+      for (let k = 0; k < (node.famsArray || []).length; k++) {
+        const famPointer     = node.famsArray[k];
+        const famChildren    = (node.childrenByFam || {})[famPointer] || [];
+        const isFamCollapsed = collapsedNodes.has(node.id + '_' + famPointer);
+        // Bond center Y for family k = gap between person k and k+1
+        const bondCenterY = chainTopY + (k + 1) * lrSlot - COUPLE_DIST / 2;
+        const connX       = x + PERSON_WIDTH / 2;
+
+        if (!isFamCollapsed) {
+          for (const child of famChildren) {
+            const childLeft = child._x * mx;
+            const lrPersonOffset = COUPLE_VERT_HEIGHT / 2 - PERSON_HEIGHT / 2;
+            const lrCoupleChildIdx = child.type === 'couple'
+              ? (child.data[0].famc === famPointer ? 0 : 1)
+              : 0;
+            const childY = child.type === 'couple'
+              ? child._y * LR_MY + (lrCoupleChildIdx === 0 ? -lrPersonOffset : lrPersonOffset)
+              : child._y * LR_MY;
+            const midX = (x + PERSON_WIDTH + childLeft) / 2;
+            drawParentsChildEdge(ctx,
+              connX, bondCenterY, midX, bondCenterY, midX, childY, childLeft, childY,
+              currentTheme.edge, 10, false
+            );
+          }
+        }
+        if (famChildren.length > 0) {
+          drawToggleButton(ctx, connX + 20, bondCenterY, isFamCollapsed);
+          toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node, x: connX + 20, y: bondCenterY, r: 14 });
+        }
+      }
+    } else {
+      // TD mode: persons side by side, bond lines horizontal, children exit downward
+      const nodeY  = y;
+      const midY   = nodeY + PERSON_HEIGHT / 2;
+      const leftX  = x;
+
+      for (let k = 0; k < n; k++) {
+        const p  = node.data[k];
+        const px = leftX + k * (PERSON_WIDTH + COUPLE_DIST);
+        drawPerson(ctx, px, nodeY, p.givenname, p.surname, p.dob, p.dod, p.img, p.sex, p.id === selectedPersonId, p.id);
+        addPersonToCoordinates(p.id, px, nodeY);
+
+        if (k < n - 1) {
+          const x1 = px + PERSON_WIDTH;
+          const x2 = x1 + COUPLE_DIST;
+          const isDirect = k === sharedIdx || k + 1 === sharedIdx;
+          if (isDirect) {
+            drawLine(ctx, x1, midY, x2, midY, currentTheme.edge);
+          } else {
+            drawDashedLine(ctx, x1, midY, x2, midY, currentTheme.edge);
+          }
+        }
+      }
+
+      for (let k = 0; k < (node.famsArray || []).length; k++) {
+        const famPointer     = node.famsArray[k];
+        const famChildren    = (node.childrenByFam || {})[famPointer] || [];
+        const isFamCollapsed = collapsedNodes.has(node.id + '_' + famPointer);
+        const dropX = leftX + k * (PERSON_WIDTH + COUPLE_DIST) + PERSON_WIDTH + COUPLE_DIST / 2;
+
+        if (!isFamCollapsed) {
+          for (const child of famChildren) {
+            const childX   = childConnectionX(child, famPointer);
+            const childY   = child._y * my;
+            const downDist = childY - midY;
+            const round    = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
+            drawParentsChildEdge(ctx,
+              dropX, midY, dropX, midY + downDist / 2,
+              childX, childY - downDist / 2, childX, childY,
+              currentTheme.edge, 10, round
+            );
+          }
+        }
+        if (famChildren.length > 0) {
+          drawToggleButton(ctx, dropX, midY + 20, isFamCollapsed);
+          toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node, x: dropX, y: midY + 20, r: 14 });
+        }
       }
     }
   }
@@ -3910,8 +4161,10 @@ async function main(data, canvas) {
   let imageEdits = {};
   try { imageEdits = JSON.parse(localStorage.getItem(IMAGES_KEY) || '{}'); } catch (_) {}
 
-  const NEW_PEOPLE_KEY = 'familyTreeNewPeople';
+  const NEW_PEOPLE_KEY   = 'familyTreeNewPeople';
   const FAMILY_EDITS_KEY = 'familyTreeFamilyEdits';
+  const PINNED_KEY            = 'familyTreePinnedPerson';
+  const HIDE_SAVED_MODAL_KEY  = 'familyTreeHideSavedModal';
   let newPeople = {};
   let familyEdits = {};
   try { newPeople   = JSON.parse(localStorage.getItem(NEW_PEOPLE_KEY)   || '{}'); } catch (_) {}
@@ -4239,7 +4492,7 @@ async function main(data, canvas) {
     for (let y = 0; y < graph.length; y++) {
       for (const node of graph[y]) node._y = y + 1;
     }
-    computeLayout(root);
+    currentLayout(root);
 
     nodeMap.clear();
     originalChildren.clear();
@@ -4272,7 +4525,7 @@ async function main(data, canvas) {
 
     recomputeLayout();
     redraw();
-    updateBirthdayBadge();
+    updateDataBadge();
   }
 
   function applyDelta(personId, changedFields) {
@@ -4322,7 +4575,7 @@ async function main(data, canvas) {
         }
       }
     }
-    computeLayout(root);
+    currentLayout(root);
     for (const [nodeId, children] of originalChildren) {
       const node = nodeMap.get(nodeId);
       if (node) node.children = children;
@@ -4330,11 +4583,16 @@ async function main(data, canvas) {
   }
 
   const ctx = canvas.getContext('2d');
-  let panX = 0
-  let panY = 0
-  let scale = 1
-  const MIN_SCALE = 0.15;
+  let panX = 0;
+  let panY = 0;
+  let scale = 1;
+  const MIN_SCALE = 0.05;
   const MAX_SCALE = 5;
+
+  const LAYOUT_KEY    = 'familyTreeLayout';
+  const _savedLayout  = localStorage.getItem(LAYOUT_KEY) || 'TD';
+  layoutDirection     = _savedLayout;
+  let currentLayout   = _savedLayout === 'LR' ? computeLayoutLR : computeLayout;
 
   await rebuildGraph();
 
@@ -4381,18 +4639,24 @@ async function main(data, canvas) {
     }).join('');
   }
 
-  function updateBirthdayBadge() {
-    const count = getUpcomingBirthdays(pMap).length;
-    document.getElementById('birthday-badge').style.display = count > 0 ? 'block' : 'none';
+  function updateDataBadge() {
+    const hasChanges =
+      Object.keys(edits).length > 0 ||
+      Object.keys(imageEdits).length > 0 ||
+      Object.keys(newPeople).length > 0 ||
+      Object.keys(familyEdits).length > 0;
+    document.getElementById('data-badge').style.display = hasChanges ? 'block' : 'none';
   }
 
   function redraw() {
+    const dpr = window.devicePixelRatio || 1;
     coordinates.length = 0;
     toggleAreas.length = 0;
     addRelativeAreas.length = 0;
     ctx.save();
     ctx.fillStyle = currentTheme.canvasBg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr);
     ctx.translate(panX, panY);
     ctx.scale(scale, scale);
     drawNode(ctx, root);
@@ -4525,7 +4789,8 @@ async function main(data, canvas) {
   const panelIdEl    = document.getElementById('panel-id');
   const panelBirthEl = document.getElementById('panel-birth');
   const panelDeathEl = document.getElementById('panel-death');
-  const panelEditBtn  = document.getElementById('panel-edit-btn');
+  const panelEditBtn       = document.getElementById('panel-edit-btn');
+  const panelCrosshairBtn  = document.getElementById('panel-crosshair-btn');
   const panelViewEl   = document.getElementById('panel-view');
   const panelEditForm = document.getElementById('panel-edit-form');
   const editGivenname   = document.getElementById('edit-givenname');
@@ -4806,6 +5071,7 @@ async function main(data, canvas) {
       : '';
     panelDeathEl.textContent = person.dod ? t('person.died') + formatGedcomDate(person.dod) : '';
     panelEl.classList.add('open');
+    panelCrosshairBtn.classList.toggle('pinned', localStorage.getItem(PINNED_KEY) === personId);
     redraw();
   }
 
@@ -4846,6 +5112,18 @@ async function main(data, canvas) {
     if (currentPersonId) enterEditMode(currentPersonId);
   });
 
+  panelCrosshairBtn.addEventListener('click', () => {
+    if (!currentPersonId) return;
+    const pinned = localStorage.getItem(PINNED_KEY);
+    if (pinned === currentPersonId) {
+      localStorage.removeItem(PINNED_KEY);
+      panelCrosshairBtn.classList.remove('pinned');
+    } else {
+      localStorage.setItem(PINNED_KEY, currentPersonId);
+      panelCrosshairBtn.classList.add('pinned');
+    }
+  });
+
   document.getElementById('edit-cancel-btn').addEventListener('click', exitEditMode);
 
   panelEditForm.addEventListener('submit', async (e) => {
@@ -4882,6 +5160,11 @@ async function main(data, canvas) {
     showPanel(currentPersonId);
     redraw();
     updateSettingsEditCount();
+    updateDataBadge();
+    if (!localStorage.getItem(HIDE_SAVED_MODAL_KEY)) {
+      savedLocallyCheckbox.checked = false;
+      savedLocallyModal.style.display = 'flex';
+    }
   });
 
   function nextPersonId() {
@@ -5047,11 +5330,12 @@ async function main(data, canvas) {
           collapsedNodes.add(area.nodeId);
         }
         const toggledNode = area.nodeRef || nodeMap.get(area.nodeId);
+        const effectiveMy = layoutDirection === 'LR' ? LR_MY : my;
         const beforeX = toggledNode._x * mx;
-        const beforeY = toggledNode._y * my + toggledNode.height / 2;
+        const beforeY = toggledNode._y * effectiveMy + toggledNode.height / 2;
         recomputeLayout();
         panX += (beforeX - toggledNode._x * mx) * scale;
-        panY += (beforeY - (toggledNode._y * my + toggledNode.height / 2)) * scale;
+        panY += (beforeY - (toggledNode._y * effectiveMy + toggledNode.height / 2)) * scale;
         scheduleSave();
         redraw();
         return;
@@ -5076,8 +5360,11 @@ async function main(data, canvas) {
   canvas.addEventListener('click', handleClick);
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = window.innerWidth  * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width  = window.innerWidth  + 'px';
+    canvas.style.height = window.innerHeight + 'px';
   }
 
   function onResize() {
@@ -5088,14 +5375,36 @@ async function main(data, canvas) {
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', onResize);
 
-  // before initial draw find the coordinates of root node and pan to it
-  panX = canvas.width / 2 - root._x * mx;
-  panY = root._y + 25;
-
   const homeScale = scale;
   function getHomePan() {
-    return { panX: canvas.width / 2 - root._x * mx, panY: root._y + 25 };
+    const pinnedId = localStorage.getItem(PINNED_KEY);
+    if (pinnedId) {
+      const rect = findPersonCanvasRect(pinnedId);
+      if (rect) {
+        return {
+          panX: window.innerWidth  / 2 - (rect.x + rect.width  / 2) * homeScale,
+          panY: window.innerHeight / 2 - (rect.y + rect.height / 2) * homeScale,
+        };
+      }
+    }
+    let rootCenterX, rootCenterY;
+    if (layoutDirection === 'LR') {
+      rootCenterX = (root._x * mx + root.width  / 2) * homeScale;
+      rootCenterY = root._y * LR_MY * homeScale;
+    } else {
+      rootCenterX = root._x * mx * homeScale;
+      rootCenterY = (root._y * my + root.height / 2) * homeScale;
+    }
+    return {
+      panX: window.innerWidth  / 2 - rootCenterX,
+      panY: window.innerHeight / 2 - rootCenterY,
+    };
   }
+
+  // before initial draw find the coordinates of root node and pan to it
+  const home = getHomePan();
+  panX = home.panX;
+  panY = home.panY;
 
   const VIEW_KEY = 'view-' + rootId;
   let saveTimer = null;
@@ -5129,8 +5438,8 @@ async function main(data, canvas) {
   }
 
   function applyZoom(factor) {
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
+    const cx = window.innerWidth  / 2;
+    const cy = window.innerHeight / 2;
     const newScale = scale * factor;
     if (newScale < MIN_SCALE || newScale > MAX_SCALE) return;
     panX -= (cx - panX) * (factor - 1);
@@ -5197,8 +5506,16 @@ async function main(data, canvas) {
       if (!node.data) continue;
       const k = node.data.findIndex(p => p.id === personId);
       if (k === -1) continue;
-      const leftX = node._x * mx - node.width / 2;
-      return { x: leftX + k * (PERSON_WIDTH + COUPLE_DIST), y: node._y * my, width: PERSON_WIDTH, height: PERSON_HEIGHT };
+      if (layoutDirection === 'LR') {
+        const leftX = node._x * mx;
+        const topY  = node.type === 'couple'
+          ? node._y * LR_MY - COUPLE_VERT_HEIGHT / 2 + (k === 1 ? PERSON_HEIGHT + COUPLE_DIST : 0)
+          : node._y * LR_MY - node.height / 2;
+        return { x: leftX, y: topY, width: PERSON_WIDTH, height: PERSON_HEIGHT };
+      } else {
+        const leftX = node._x * mx - node.width / 2;
+        return { x: leftX + k * (PERSON_WIDTH + COUPLE_DIST), y: node._y * my, width: PERSON_WIDTH, height: PERSON_HEIGHT };
+      }
     }
     return null;
   }
@@ -5207,8 +5524,8 @@ async function main(data, canvas) {
     const rect = findPersonCanvasRect(personId);
     if (rect) {
       scale = Math.min(MAX_SCALE, Math.max(scale, 1));
-      panX = canvas.width / 2 - (rect.x + rect.width / 2) * scale;
-      panY = canvas.height / 2 - (rect.y + rect.height / 2) * scale;
+      panX = window.innerWidth  / 2 - (rect.x + rect.width  / 2) * scale;
+      panY = window.innerHeight / 2 - (rect.y + rect.height / 2) * scale;
       scheduleSave();
     }
     showPanel(personId);
@@ -5335,6 +5652,22 @@ async function main(data, canvas) {
     redraw();
   });
 
+  const layoutSelect = document.getElementById('layout-select');
+  layoutSelect.value = layoutDirection; // already restored above
+  layoutSelect.addEventListener('change', () => {
+    layoutDirection = layoutSelect.value;
+    currentLayout   = layoutDirection === 'LR' ? computeLayoutLR : computeLayout;
+    localStorage.setItem(LAYOUT_KEY, layoutDirection);
+    rebuildGraph().then(() => {
+      const home = getHomePan();
+      panX = home.panX;
+      panY = home.panY;
+      scale = homeScale;
+      scheduleSave();
+      redraw();
+    });
+  });
+
   const editCountEl      = document.getElementById('settings-edit-count');
   const hasEditsDescEl   = document.getElementById('has-edits-desc');
   const resetEditsBtn    = document.getElementById('settings-reset-edits');
@@ -5428,6 +5761,18 @@ async function main(data, canvas) {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  });
+
+  const savedLocallyModal    = document.getElementById('saved-locally-modal');
+  const savedLocallyOk       = document.getElementById('saved-locally-ok');
+  const savedLocallyCheckbox = document.getElementById('saved-locally-checkbox');
+
+  savedLocallyOk.addEventListener('click', () => {
+    if (savedLocallyCheckbox.checked) localStorage.setItem(HIDE_SAVED_MODAL_KEY, '1');
+    savedLocallyModal.style.display = 'none';
+  });
+  savedLocallyModal.addEventListener('click', (e) => {
+    if (e.target === savedLocallyModal) savedLocallyModal.style.display = 'none';
   });
 
   const resetEditsModal   = document.getElementById('reset-edits-modal');
@@ -5636,8 +5981,11 @@ function setupCanvas() {
   document.getElementById('login-bg')?.remove();
   const canvas = document.createElement('canvas');
   canvas.id = 'myCanvas';
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = window.innerWidth  * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width  = window.innerWidth  + 'px';
+  canvas.style.height = window.innerHeight + 'px';
   canvas.style.border = 'none';
   canvas.style.display = 'block'; // To remove any extra spacing (similar to using CSS reset)
   document.body.appendChild(canvas);

@@ -153,6 +153,7 @@
       flex-direction: row;
       gap: 6px;
       align-items: center;
+      will-change: transform;
     }
     #nav-widget.visible {
       display: flex;
@@ -198,6 +199,7 @@
       font-size: 18px;
       align-items: center;
       justify-content: center;
+      will-change: transform;
     }
     #birthday-btn { top: 16px; right: 148px; position: fixed; }
     #about-btn    { top: 16px; right: 104px; }
@@ -411,25 +413,34 @@
     #panel-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       margin-bottom: 8px;
       min-height: 32px;
     }
     #panel-edit-btn,
     #panel-crosshair-btn {
-      background: none;
-      border: none;
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      background: var(--surface-2);
       color: var(--text-muted);
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-      padding: 2px 6px;
-      margin-right: 4px;
+      border: 1px solid var(--border);
       border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
     }
-    #panel-edit-btn:hover,
-    #panel-crosshair-btn:hover { color: var(--text); background: var(--surface-2); }
-    #panel-crosshair-btn.pinned { color: var(--btn-primary, #3498db); }
+    #panel-edit-btn {
+      background: var(--btn-primary, #3498db);
+      color: #fff;
+      border-color: var(--btn-primary, #3498db);
+      font-weight: 600;
+    }
+    #panel-edit-btn:hover { background: var(--btn-hover, #2980b9); border-color: var(--btn-hover, #2980b9); color: #fff; }
+    #panel-crosshair-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    #panel-crosshair-btn.pinned { color: var(--btn-primary, #3498db); border-color: var(--btn-primary, #3498db); }
     #panel-img-wrap {
       position: relative;
       width: fit-content;
@@ -935,6 +946,11 @@
       font-size: 12px;
       font-family: Arial, sans-serif;
       margin: 8px 0 0;
+    }
+    .field-warning {
+      color: #c0392b;
+      font-size: 0.85em;
+      margin: 2px 0 4px;
     }
     #relation-btn {
       top: 16px; right: 192px; position: fixed;
@@ -1259,7 +1275,7 @@
         </select>
       </label>
       <label data-i18n="rel.dob">  <input id="ar-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
-      <p id="ar-dob-warning" style="display:none;color:#c0392b;font-size:0.85em;margin:2px 0 4px"></p>
+      <p id="ar-dob-warning" class="field-warning" style="display:none"></p>
       <label data-i18n="rel.dod">  <input id="ar-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="rel.pob"> <input id="ar-pob" type="text"></label>
       <p id="add-relative-error" style="display:none"></p>
@@ -1312,8 +1328,6 @@
 
   <div id="person-panel">
     <div id="panel-header">
-      <button id="panel-crosshair-btn" title="Set as home">&#x2316;</button>
-      <button id="panel-edit-btn" title="Edit">&#x270E;</button>
       <button id="panel-close">&#x00D7;</button>
     </div>
     <img id="panel-img" src="" alt="" />
@@ -1330,13 +1344,17 @@
         <p id="panel-birth"></p>
         <p id="panel-death"></p>
       </div>
-      <button id="panel-relation-btn" data-i18n="relation.addBtn"></button>
+      <button id="panel-edit-btn"><span aria-hidden="true">&#x270E;</span> <span data-i18n="panel.edit"></span></button>
+      <button id="panel-relation-btn" data-i18n="relation.addBtn"><span aria-hidden="true">+</span> </button>
+      <button id="panel-crosshair-btn"><span aria-hidden="true">&#x2316;</span> <span data-i18n="panel.setHome"></span></button>
     </div>
     <form id="panel-edit-form" style="display:none">
       <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
       <label data-i18n="person.lastName">  <input id="edit-surname"   type="text"></label>
       <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" data-i18n-placeholder="date.placeholder"></label>
+      <p id="edit-dob-warning" class="field-warning" style="display:none"></p>
       <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" data-i18n-placeholder="date.placeholder"></label>
+      <p id="edit-dod-warning" class="field-warning" style="display:none"></p>
       <label data-i18n="person.birthplace"> <input id="edit-pob"       type="text"></label>
       <label data-i18n="person.sex">
         <select id="edit-sex">
@@ -1582,6 +1600,7 @@
       flex-direction: row;
       gap: 6px;
       align-items: center;
+      will-change: transform;
     }
     #nav-widget.visible {
       display: flex;
@@ -1627,6 +1646,7 @@
       font-size: 18px;
       align-items: center;
       justify-content: center;
+      will-change: transform;
     }
     #birthday-btn { top: 16px; right: 148px; position: fixed; }
     #about-btn    { top: 16px; right: 104px; }
@@ -1840,25 +1860,34 @@
     #panel-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       margin-bottom: 8px;
       min-height: 32px;
     }
     #panel-edit-btn,
     #panel-crosshair-btn {
-      background: none;
-      border: none;
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      background: var(--surface-2);
       color: var(--text-muted);
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-      padding: 2px 6px;
-      margin-right: 4px;
+      border: 1px solid var(--border);
       border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
     }
-    #panel-edit-btn:hover,
-    #panel-crosshair-btn:hover { color: var(--text); background: var(--surface-2); }
-    #panel-crosshair-btn.pinned { color: var(--btn-primary, #3498db); }
+    #panel-edit-btn {
+      background: var(--btn-primary, #3498db);
+      color: #fff;
+      border-color: var(--btn-primary, #3498db);
+      font-weight: 600;
+    }
+    #panel-edit-btn:hover { background: var(--btn-hover, #2980b9); border-color: var(--btn-hover, #2980b9); color: #fff; }
+    #panel-crosshair-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    #panel-crosshair-btn.pinned { color: var(--btn-primary, #3498db); border-color: var(--btn-primary, #3498db); }
     #panel-img-wrap {
       position: relative;
       width: fit-content;
@@ -2365,6 +2394,11 @@
       font-family: Arial, sans-serif;
       margin: 8px 0 0;
     }
+    .field-warning {
+      color: #c0392b;
+      font-size: 0.85em;
+      margin: 2px 0 4px;
+    }
     #relation-btn {
       top: 16px; right: 192px; position: fixed;
     }
@@ -2688,7 +2722,7 @@
         </select>
       </label>
       <label data-i18n="rel.dob">  <input id="ar-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
-      <p id="ar-dob-warning" style="display:none;color:#c0392b;font-size:0.85em;margin:2px 0 4px"></p>
+      <p id="ar-dob-warning" class="field-warning" style="display:none"></p>
       <label data-i18n="rel.dod">  <input id="ar-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
       <label data-i18n="rel.pob"> <input id="ar-pob" type="text"></label>
       <p id="add-relative-error" style="display:none"></p>
@@ -2741,8 +2775,6 @@
 
   <div id="person-panel">
     <div id="panel-header">
-      <button id="panel-crosshair-btn" title="Set as home">&#x2316;</button>
-      <button id="panel-edit-btn" title="Edit">&#x270E;</button>
       <button id="panel-close">&#x00D7;</button>
     </div>
     <img id="panel-img" src="" alt="" />
@@ -2759,13 +2791,17 @@
         <p id="panel-birth"></p>
         <p id="panel-death"></p>
       </div>
-      <button id="panel-relation-btn" data-i18n="relation.addBtn"></button>
+      <button id="panel-edit-btn"><span aria-hidden="true">&#x270E;</span> <span data-i18n="panel.edit"></span></button>
+      <button id="panel-relation-btn" data-i18n="relation.addBtn"><span aria-hidden="true">+</span> </button>
+      <button id="panel-crosshair-btn"><span aria-hidden="true">&#x2316;</span> <span data-i18n="panel.setHome"></span></button>
     </div>
     <form id="panel-edit-form" style="display:none">
       <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
       <label data-i18n="person.lastName">  <input id="edit-surname"   type="text"></label>
       <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" data-i18n-placeholder="date.placeholder"></label>
+      <p id="edit-dob-warning" class="field-warning" style="display:none"></p>
       <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" data-i18n-placeholder="date.placeholder"></label>
+      <p id="edit-dod-warning" class="field-warning" style="display:none"></p>
       <label data-i18n="person.birthplace"> <input id="edit-pob"       type="text"></label>
       <label data-i18n="person.sex">
         <select id="edit-sex">
@@ -3700,6 +3736,10 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'rel.errorNameRequired':    'Enter at least a first or last name.',
     'rel.errorParentSlotsFull': 'Both parent slots are already filled.',
 
+    // Person panel buttons
+    'panel.edit':               'Edit',
+    'panel.setHome':            'Set as home',
+
     // Buttons (shared)
     'btn.cancel':               'Cancel',
     'btn.save':                 'Save',
@@ -3868,6 +3908,10 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'rel.errorNameRequired':    'Podaj imię lub nazwisko.',
     'rel.errorParentSlotsFull': 'Oba miejsca dla rodziców są już zajęte.',
 
+    // Person panel buttons
+    'panel.edit':               'Edytuj',
+    'panel.setHome':            'Ustaw jako główną',
+
     'btn.cancel':               'Anuluj',
     'btn.save':                 'Zapisz',
     'btn.close':                'Zamknij',
@@ -4000,15 +4044,16 @@ function normToken(s) {
 
 function parseParts(str) {
   if (!str) return null;
-  const tokens = str.trim().split(/\s+/).map(normToken);
+  const tokens = str.trim().replace(/[\/\.]/g, ' ').split(/\s+/).map(normToken);
   let day, month, year;
   for (const tok of tokens) {
     if (MONTH_MAP[tok]) {
       month = MONTH_MAP[tok];
     } else if (/^\d{4}$/.test(tok)) {
       year = parseInt(tok, 10);
-    } else if (/^\d{1,2}$/.test(tok) && day === undefined) {
-      day = parseInt(tok, 10);
+    } else if (/^\d{1,2}$/.test(tok)) {
+      if (day === undefined)        day   = parseInt(tok, 10);
+      else if (month === undefined) month = parseInt(tok, 10);
     }
   }
   if (!year) return null;
@@ -5458,6 +5503,9 @@ async function main(data, canvas) {
   const editSurname     = document.getElementById('edit-surname');
   const editDob         = document.getElementById('edit-dob');
   const editDod         = document.getElementById('edit-dod');
+  const editDobWarnEl   = document.getElementById('edit-dob-warning');
+  const editDodWarnEl   = document.getElementById('edit-dod-warning');
+  const editSaveBtn     = document.getElementById('edit-save-btn');
   const editPob         = document.getElementById('edit-pob');
   const editSex         = document.getElementById('edit-sex');
   const editPhotoInput  = document.getElementById('edit-photo');
@@ -5483,6 +5531,31 @@ async function main(data, canvas) {
     panelRemoveBtn.style.display = 'none';
   }
 
+  function validateEditDates() {
+    const currentYear = new Date().getFullYear();
+    const dobYear = extractYear(editDob.value.trim());
+    const dodYear = extractYear(editDod.value.trim());
+    let valid = true;
+    if (dobYear !== null && dobYear > currentYear) {
+      editDobWarnEl.textContent = 'The date of birth is in the future — please check the date.';
+      editDobWarnEl.style.display = '';
+      valid = false;
+    } else {
+      editDobWarnEl.style.display = 'none';
+    }
+    if (dodYear !== null && dodYear > currentYear) {
+      editDodWarnEl.textContent = 'The date of death is in the future — please check the date.';
+      editDodWarnEl.style.display = '';
+      valid = false;
+    } else {
+      editDodWarnEl.style.display = 'none';
+    }
+    editSaveBtn.disabled = !valid;
+  }
+
+  editDob.addEventListener('input', validateEditDates);
+  editDod.addEventListener('input', validateEditDates);
+
   function enterEditMode(personId) {
     const p = pMap[personId];
     if (!p) return;
@@ -5498,6 +5571,7 @@ async function main(data, canvas) {
     panelViewEl.style.display  = 'none';
     panelEditForm.style.display = '';
     panelRemoveBtn.style.display = isLeafPerson(personId) ? 'block' : 'none';
+    validateEditDates();
     editGivenname.focus();
   }
 
@@ -5883,7 +5957,10 @@ async function main(data, canvas) {
     const parentYear = parentPerson ? extractYear(parentPerson.dob) : null;
     const childYear  = extractYear(arDobEl.value.trim());
     let warning = null;
-    if (parentYear !== null && childYear !== null) {
+    const currentYear = new Date().getFullYear();
+    if (childYear !== null && childYear > currentYear) {
+      warning = 'The date of birth is in the future — please check the date.';
+    } else if (parentYear !== null && childYear !== null) {
       if (childYear < parentYear) {
         warning = 'The child was born before the parent — please check the date.';
       } else if (childYear < parentYear + 10) {

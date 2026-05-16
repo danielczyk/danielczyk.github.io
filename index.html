@@ -841,6 +841,52 @@
       cursor: pointer;
     }
     #panel-remove-btn:hover { background: #a93226; }
+    #panel-set-root-btn {
+      display: none;
+      margin-top: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+    }
+    #panel-set-root-btn:hover { background: #a93226; }
+    #set-root-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 201;
+      align-items: center;
+      justify-content: center;
+    }
+    #set-root-modal-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    #set-root-modal-cancel:hover { color: var(--text); border-color: var(--text-muted); }
+    #set-root-modal-confirm {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    #set-root-modal-confirm:hover { background: #a93226; }
     #search-container {
       position: fixed;
       top: 16px;
@@ -1566,6 +1612,7 @@
       <button id="panel-edit-btn"><span aria-hidden="true">&#x270E;</span> <span data-i18n="panel.edit"></span></button>
       <button id="panel-relation-btn" data-i18n="relation.addBtn"><span aria-hidden="true">+</span> </button>
       <button id="panel-crosshair-btn"><span aria-hidden="true">&#x2316;</span> <span data-i18n="panel.setHome"></span></button>
+      <button id="panel-set-root-btn" data-i18n="panel.setRoot"></button>
     </div>
     <form id="panel-edit-form" style="display:none">
       <div class="form-row">
@@ -1650,6 +1697,15 @@
       <div id="remove-modal-actions">
         <button id="remove-modal-cancel" data-i18n="remove.cancel"></button>
         <button id="remove-modal-confirm" data-i18n="remove.confirm"></button>
+      </div>
+    </div>
+  </div>
+  <div id="set-root-modal">
+    <div id="remove-modal-box">
+      <p id="set-root-modal-text"></p>
+      <div id="remove-modal-actions">
+        <button id="set-root-modal-cancel" data-i18n="setRoot.cancel"></button>
+        <button id="set-root-modal-confirm" data-i18n="setRoot.confirm"></button>
       </div>
     </div>
   </div>
@@ -2541,6 +2597,52 @@
       cursor: pointer;
     }
     #panel-remove-btn:hover { background: #a93226; }
+    #panel-set-root-btn {
+      display: none;
+      margin-top: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+    }
+    #panel-set-root-btn:hover { background: #a93226; }
+    #set-root-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 201;
+      align-items: center;
+      justify-content: center;
+    }
+    #set-root-modal-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    #set-root-modal-cancel:hover { color: var(--text); border-color: var(--text-muted); }
+    #set-root-modal-confirm {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    #set-root-modal-confirm:hover { background: #a93226; }
     #search-container {
       position: fixed;
       top: 16px;
@@ -3266,6 +3368,7 @@
       <button id="panel-edit-btn"><span aria-hidden="true">&#x270E;</span> <span data-i18n="panel.edit"></span></button>
       <button id="panel-relation-btn" data-i18n="relation.addBtn"><span aria-hidden="true">+</span> </button>
       <button id="panel-crosshair-btn"><span aria-hidden="true">&#x2316;</span> <span data-i18n="panel.setHome"></span></button>
+      <button id="panel-set-root-btn" data-i18n="panel.setRoot"></button>
     </div>
     <form id="panel-edit-form" style="display:none">
       <div class="form-row">
@@ -3350,6 +3453,15 @@
       <div id="remove-modal-actions">
         <button id="remove-modal-cancel" data-i18n="remove.cancel"></button>
         <button id="remove-modal-confirm" data-i18n="remove.confirm"></button>
+      </div>
+    </div>
+  </div>
+  <div id="set-root-modal">
+    <div id="remove-modal-box">
+      <p id="set-root-modal-text"></p>
+      <div id="remove-modal-actions">
+        <button id="set-root-modal-cancel" data-i18n="setRoot.cancel"></button>
+        <button id="set-root-modal-confirm" data-i18n="setRoot.confirm"></button>
       </div>
     </div>
   </div>
@@ -4267,6 +4379,10 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     // Person panel buttons
     'panel.edit':               'Edit',
     'panel.setHome':            'Set as home',
+    'panel.setRoot':            'Set as root',
+    'setRoot.text':             '{name} will become the new root of the tree. The tree will be redrawn starting from this person downwards. Any ancestors of this person will not be visible.',
+    'setRoot.confirm':          'Set as root',
+    'setRoot.cancel':           'Cancel',
 
     // Buttons (shared)
     'btn.cancel':               'Cancel',
@@ -4471,6 +4587,10 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     // Person panel buttons
     'panel.edit':               'Edytuj',
     'panel.setHome':            'Ustaw jako główną',
+    'panel.setRoot':            'Ustaw jako korzeń',
+    'setRoot.text':             '{name} zostanie nowym korzeniem drzewa. Drzewo zostanie przerysowane zaczynając od tej osoby w dół. Przodkowie tej osoby nie będą widoczni.',
+    'setRoot.confirm':          'Ustaw jako korzeń',
+    'setRoot.cancel':           'Anuluj',
 
     'btn.cancel':               'Anuluj',
     'btn.save':                 'Zapisz',
@@ -6352,6 +6472,7 @@ async function main(data, canvas) {
   const panelHistory   = [];
   const panelEditBtn       = document.getElementById('panel-edit-btn');
   const panelCrosshairBtn  = document.getElementById('panel-crosshair-btn');
+  const panelSetRootBtn    = document.getElementById('panel-set-root-btn');
   const panelViewEl   = document.getElementById('panel-view');
   const panelEditForm = document.getElementById('panel-edit-form');
   const editGivenname   = document.getElementById('edit-givenname');
@@ -6777,6 +6898,7 @@ async function main(data, canvas) {
     panelNotesEl.style.display = notes ? '' : 'none';
 
     panelBackBtn.style.display = panelHistory.length > 0 ? '' : 'none';
+    panelSetRootBtn.style.display = (data.people.length === 0 && personId !== rootId) ? 'block' : 'none';
     panelEl.classList.add('open');
     panelCrosshairBtn.classList.toggle('pinned', localStorage.getItem(PINNED_KEY) === personId);
     redraw();
@@ -6834,6 +6956,29 @@ async function main(data, canvas) {
       localStorage.setItem(PINNED_KEY, currentPersonId);
       panelCrosshairBtn.classList.add('pinned');
     }
+  });
+
+  const setRootModal        = document.getElementById('set-root-modal');
+  const setRootModalText    = document.getElementById('set-root-modal-text');
+  const setRootModalCancel  = document.getElementById('set-root-modal-cancel');
+  const setRootModalConfirm = document.getElementById('set-root-modal-confirm');
+
+  panelSetRootBtn.addEventListener('click', () => {
+    if (!currentPersonId) return;
+    const person = allPeopleByPointer.get(currentPersonId);
+    const name = person ? (`${person.givenname || ''} ${person.surname || ''}`).trim() || currentPersonId : currentPersonId;
+    setRootModalText.textContent = t('setRoot.text').replace('{name}', name);
+    setRootModal.style.display = 'flex';
+  });
+
+  setRootModalCancel.addEventListener('click', () => {
+    setRootModal.style.display = 'none';
+  });
+
+  setRootModalConfirm.addEventListener('click', () => {
+    setRootModal.style.display = 'none';
+    localStorage.setItem(SCRATCH_ROOT_KEY, currentPersonId);
+    location.reload();
   });
 
   document.getElementById('edit-cancel-btn').addEventListener('click', exitEditMode);
@@ -7271,12 +7416,24 @@ async function main(data, canvas) {
       newPerson.famc = famPointer;
 
     } else if (rel === 'spouse') {
-      const famPointer = nextFamilyId();
-      const isHusband  = anchorPerson.sex !== 'F';
-      familyEdits[famPointer] = { _new: true,
-        husband:  isHusband ? personId : newId,
-        wife:     isHusband ? newId    : personId,
-        children: [] };
+      // If anchor already has a solo parent family (one spouse slot empty), fill that slot
+      // so existing children stay linked to both parents rather than orphaned in the old family
+      const soloFamEntry = Object.entries(fMap).find(([, f]) =>
+        (f.husband === personId && !f.wife) || (f.wife === personId && !f.husband)
+      );
+      let famPointer;
+      if (soloFamEntry) {
+        famPointer = soloFamEntry[0];
+        const slot = soloFamEntry[1].husband === personId ? 'wife' : 'husband';
+        familyEdits[famPointer] = { ...(familyEdits[famPointer] || {}), [slot]: newId };
+      } else {
+        famPointer = nextFamilyId();
+        const isHusband = anchorPerson.sex !== 'F';
+        familyEdits[famPointer] = { _new: true,
+          husband:  isHusband ? personId : newId,
+          wife:     isHusband ? newId    : personId,
+          children: [] };
+      }
       newPerson.fams = famPointer;
 
     } else if (rel === 'parent') {
@@ -7313,6 +7470,12 @@ async function main(data, canvas) {
     newPeople[newId] = newPerson;
     localStorage.setItem(NEW_PEOPLE_KEY,   JSON.stringify(newPeople));
     localStorage.setItem(FAMILY_EDITS_KEY, JSON.stringify(familyEdits));
+
+    if (data.people.length === 0 && rel === 'parent' && personId === rootId) {
+      localStorage.setItem(SCRATCH_ROOT_KEY, newId);
+      location.reload();
+      return;
+    }
 
     await rebuildGraph();
     updateSettingsEditCount();
@@ -7883,7 +8046,7 @@ async function main(data, canvas) {
   sendWebhookBtn.addEventListener('click', async () => {
     const email = webhookEmailEl.value.trim();
     localStorage.setItem(WEBHOOK_EMAIL_KEY, email);
-    const payload = { edits, newPeople, imageEdits, familyEdits, message: webhookMessageEl.value, email };
+    const payload = { edits, newPeople, imageEdits, familyEdits, message: webhookMessageEl.value, email, ...(data.isSample ? { source: 'scratch' } : {}) };
     sendWebhookBtn.disabled = true;
     sendWebhookBtn.textContent = t('data.sending');
     try {
@@ -8453,7 +8616,9 @@ async function main(data, canvas) {
     pMap,
     fMap,
     coordinates,
+    toggleAreas,
     root,
+    home() { const h = getHomePan(); panX = h.panX; panY = h.panY; redraw(); },
     get panX()           { return panX; },
     get panY()           { return panY; },
     get scale()          { return scale; },
@@ -8638,11 +8803,11 @@ if (localStorage.getItem(SCRATCH_KEY) === '1') {
 }
 
 // ── PWA service worker ───────────────────────────────────────────────────────
-// family-tree-1778933707903 is replaced at build time by scripts/build.js with a timestamp
+// family-tree-1778946135358 is replaced at build time by scripts/build.js with a timestamp
 // so every build gets a fresh cache name and old caches are evicted automatically.
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'family-tree-1778933707903';
+const CACHE = 'family-tree-1778946135358';
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.add(self.location.href.replace(/\\/[^\\/]*$/, '/')))

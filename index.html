@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Drzewo Genealogiczne</title>
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Family Tree&quot;,&quot;short_name&quot;:&quot;Family Tree&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23ffffff&quot;,&quot;theme_color&quot;:&quot;%233498db&quot;,&quot;icons&quot;:[]}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Family Tree">
   <style type="text/css">
     :root {
       --bg:          #ffffff;
@@ -49,6 +54,7 @@
       background: var(--bg);
     }
     #login-bg {
+      display: none;
       position: fixed;
       inset: 0;
       width: 100%;
@@ -60,6 +66,7 @@
       pointer-events: none;
     }
     #login {
+      display: none;
       position: relative;
       z-index: 1;
       background-color: var(--surface-2);
@@ -183,7 +190,8 @@
     #birthday-btn,
     #about-btn,
     #settings-btn,
-    #data-btn {
+    #data-btn,
+    #relation-btn {
       position: fixed;
       right: 16px;
       z-index: 5;
@@ -201,14 +209,16 @@
       justify-content: center;
       will-change: transform;
     }
-    #birthday-btn { top: 16px; right: 148px; position: fixed; }
+    #birthday-btn { top: 16px; right: 148px; }
     #about-btn    { top: 16px; right: 104px; }
     #settings-btn { top: 16px; right: 60px; }
     #data-btn     { top: 16px; right: 16px; }
+    #relation-btn { top: 16px; right: 192px; font-size: 15px; }
     #birthday-btn.visible,
     #about-btn.visible,
     #settings-btn.visible,
-    #data-btn.visible {
+    #data-btn.visible,
+    #relation-btn.visible {
       display: flex;
     }
     #data-badge {
@@ -279,6 +289,21 @@
       border-top: 1px solid var(--border);
       margin: 16px 0;
     }
+    .about-text {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0 0 12px;
+    }
+    .about-text-muted {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+    #birthday-btn span { filter: grayscale(1); }
     #data-panel label {
       display: block;
       font-family: Arial, sans-serif;
@@ -288,6 +313,7 @@
     }
     #data-panel input[type="text"],
     #data-panel input[type="email"],
+    #data-panel input[type="password"],
     #data-panel textarea {
       width: 100%;
       box-sizing: border-box;
@@ -381,6 +407,17 @@
       font-family: Arial, sans-serif;
       font-size: 13px;
       color: var(--text);
+    }
+    hr + .toggle-row { margin-top: 4px; }
+    .panel-select {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
     }
     .toggle-switch {
       position: relative;
@@ -523,6 +560,92 @@
     #add-relative-save:disabled { background: var(--btn-disabled); cursor: default; }
     #edit-cancel-btn,
     #add-relative-cancel { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .panel-unknown { color: var(--text-muted); font-style: italic; }
+    #panel-parents { margin-top: 6px; font-size: 13px; line-height: 1.7; }
+    #panel-parents a { color: var(--text); text-decoration: underline; cursor: pointer; }
+    #panel-parents a:hover { opacity: 0.75; }
+    #panel-spouse { margin-top: 6px; font-size: 13px; line-height: 1.7; }
+    #panel-spouse a { color: var(--text); text-decoration: underline; cursor: pointer; }
+    #panel-spouse a:hover { opacity: 0.75; }
+    #panel-spouse-marriage { color: var(--text-muted); font-size: 12px; }
+    #panel-back {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0 0 4px 0;
+      text-decoration: underline;
+    }
+    #panel-back:hover { color: var(--text); }
+    .edit-section-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 14px;
+      margin-bottom: 2px;
+    }
+    .person-picker { position: relative; }
+    .person-picker input[type="text"] { padding-right: 28px; }
+    .person-picker button {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 2px;
+    }
+    .person-picker button:hover { color: var(--text); }
+    .person-picker-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      list-style: none;
+      margin: 2px 0 0;
+      padding: 0;
+    }
+    .person-picker-results li {
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: Monaco, monospace;
+    }
+    .person-picker-results li:hover { background: var(--surface-3, var(--border)); }
+    .picker-warn { color: #e67e22; margin-left: 4px; }
+    #panel-notes {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre-wrap;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    #panel-edit-form textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 13px;
+      padding: 5px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      resize: vertical;
+    }
     .settings-row {
       display: flex;
       gap: 8px;
@@ -539,6 +662,33 @@
     #export-html-btn { width: 100%; background: var(--btn-primary); color: #fff; }
     #export-html-btn:hover { background: var(--btn-hover); }
     #export-html-btn:disabled { background: var(--btn-disabled); cursor: default; }
+    #export-password-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+    .export-pw-row { display: flex; gap: 4px; align-items: center; }
+    .export-pw-row input { flex: 1; margin-bottom: 0 !important; }
+    .export-pw-remove,
+    .export-pw-toggle {
+      background: none !important;
+      border: none !important;
+      padding: 0 4px !important;
+      font-size: 15px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .export-pw-remove:hover { color: #c0392b; }
+    .export-pw-toggle[data-revealed="true"] { color: var(--btn-primary); }
+    #export-password-add {
+      background: none !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-muted);
+      font-size: 12px !important;
+      padding: 3px 8px !important;
+      margin-bottom: 6px;
+      width: auto !important;
+      align-self: flex-start;
+    }
+    #export-password-add:hover { color: var(--text); border-color: var(--text-muted) !important; }
     #export-password-error {
       font-size: 11px;
       font-family: Arial, sans-serif;
@@ -860,6 +1010,23 @@
       font-size: 14px;
     }
     #webhook-success-close:hover { background: var(--btn-hover); }
+    #webhook-success-email { margin: 0 0 20px; font-size: 14px; font-family: Arial, sans-serif; line-height: 1.4; }
+    #has-edits-desc { margin-bottom: 12px; }
+    #export-gedcom-zip-btn { margin-top: 6px; }
+    #data-contact-prompt { margin: 12px 0 6px; }
+    #relation-swap-row { text-align: center; margin: 4px 0; }
+    #relation-swap-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+    }
     #add-relative-panel {
       position: fixed;
       top: 0;
@@ -921,6 +1088,29 @@
       align-items: center;
       gap: 6px;
     }
+    #ar-second-parent-row {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 0 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #ar-second-parent-row .ar-second-parent-legend {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    #ar-second-parent-options label {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
     #add-relative-form label {
       display: block;
       font-size: 11px;
@@ -951,9 +1141,6 @@
       color: #c0392b;
       font-size: 0.85em;
       margin: 2px 0 4px;
-    }
-    #relation-btn {
-      top: 16px; right: 192px; position: fixed;
     }
     #relation-panel {
       position: fixed;
@@ -1125,6 +1312,16 @@
       text-align: center;
     }
     #panel-relation-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    @media (min-width: 900px) {
+      #person-panel {
+        width: 480px;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 12px;
+      }
+    }
     @media (max-width: 600px) {
       #search-container {
         top: 62px;
@@ -1142,16 +1339,18 @@
       #relation-panel {
         width: 100%;
       }
+      .form-row {
+        display: block;
+      }
     }
   </style>
 </head>
-<body>
-  <script>if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');</script>
-  <button id="birthday-btn" style="position:fixed"><span style="filter:grayscale(1)">&#127874;</span></button>
+<body><script>(function(){var ns=location.pathname.replace(/\/$/,'')||'/';var s=localStorage.getItem(ns+':theme');if(s?s==='dark':matchMedia('(prefers-color-scheme:dark)').matches)document.body.classList.add('dark');})()</script>
+  <button id="birthday-btn"><span>&#127874;</span></button>
   <button id="about-btn">&#x2139;&#xFE0E;</button>
   <button id="settings-btn">&#9881;</button>
   <button id="data-btn">&#8862;<span id="data-badge"></span></button>
-  <button id="relation-btn" style="display:none;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--nav-btn-bg);color:var(--text);box-shadow:0 1px 4px var(--shadow);cursor:pointer;font-size:15px;align-items:center;justify-content:center;z-index:5">&#8596;</button>
+  <button id="relation-btn">&#8596;</button>
   <div id="birthday-panel">
     <button id="birthday-close">&#x00D7;</button>
     <h2 data-i18n="birthday.title"></h2>
@@ -1160,13 +1359,13 @@
   <div id="about-panel">
     <button id="about-close">&#x00D7;</button>
     <h2 data-i18n="about.title"></h2>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:var(--text);line-height:1.6;margin:0 0 12px" data-i18n="about.p1"></p>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:var(--text);line-height:1.6;margin:0 0 12px" data-i18n="about.p2"></p>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:var(--text);line-height:1.6;margin:0 0 12px" data-i18n="about.p3"></p>
+    <p class="about-text" data-i18n="about.p1"></p>
+    <p class="about-text" data-i18n="about.p2"></p>
+    <p class="about-text" data-i18n="about.p3"></p>
     <hr>
-    <p style="font-family:Arial,sans-serif;font-size:11px;color:var(--text-muted);line-height:1.5;margin:0" data-i18n="about.kudos"></p>
+    <p class="about-text-muted" data-i18n="about.kudos"></p>
     <hr>
-    <p style="font-family:Arial,sans-serif;font-size:11px;color:var(--text-muted);line-height:1.5;margin:0" data-i18n="about.privacy"></p>
+    <p class="about-text-muted" data-i18n="about.privacy"></p>
   </div>
   <div id="settings-panel">
     <button id="settings-close">&#x00D7;</button>
@@ -1179,17 +1378,17 @@
       </label>
     </div>
     <hr>
-    <div class="toggle-row" style="margin-top:4px">
+    <div class="toggle-row">
       <span data-i18n="settings.language"></span>
-      <select id="lang-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
+      <select id="lang-select" class="panel-select">
         <option value="en">EN</option>
         <option value="pl">PL</option>
       </select>
     </div>
     <hr>
-    <div class="toggle-row" style="margin-top:4px">
+    <div class="toggle-row">
       <span data-i18n="settings.layout"></span>
-      <select id="layout-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
+      <select id="layout-select" class="panel-select">
         <option value="TD" data-i18n="settings.layout.td"></option>
         <option value="LR" data-i18n="settings.layout.lr"></option>
       </select>
@@ -1199,9 +1398,9 @@
     <button id="data-close">&#x00D7;</button>
 
     <h2 data-i18n="data.localEdits"></h2>
-    <p id="has-edits-desc" class="data-panel-desc" style="margin-bottom:12px;display:none" data-i18n="data.hasEdits"></p>
+    <p id="has-edits-desc" class="data-panel-desc" style="display:none" data-i18n="data.hasEdits"></p>
     <div id="settings-edit-count"></div>
-    <p class="data-panel-desc" style="margin:12px 0 6px" data-i18n="data.contactPrompt"></p>
+    <p id="data-contact-prompt" class="data-panel-desc" data-i18n="data.contactPrompt"></p>
     <textarea id="webhook-message" data-i18n-placeholder="data.messagePlaceholder"></textarea>
     <input type="email" id="webhook-email" data-i18n-placeholder="data.emailPlaceholder" />
     <p id="webhook-email-error"></p>
@@ -1221,10 +1420,17 @@
 
       <hr>
 
+      <h3 data-i18n="data.exportGedcom"></h3>
+      <p class="data-panel-desc" data-i18n="data.exportGedcomDesc"></p>
+      <button id="export-gedcom-btn" data-i18n="data.downloadGedcom"></button>
+      <button id="export-gedcom-zip-btn" data-i18n="data.downloadGedcomZip"></button>
+
+      <hr>
+
       <h3 data-i18n="data.importGedcom"></h3>
       <p class="data-panel-desc" data-i18n="data.importGedcomDesc"></p>
       <label data-i18n="data.gedcomFiles"></label>
-      <input type="file" id="ged-file-input" multiple accept=".ged" />
+      <input type="file" id="ged-file-input" multiple accept=".ged,.zip" />
       <label data-i18n="data.rootPersonId"></label>
       <input type="text" id="settings-root-id" placeholder="e.g. @I500030@" />
       <button id="settings-merge-btn" data-i18n="data.mergeDownload"></button>
@@ -1234,9 +1440,8 @@
 
       <h3 data-i18n="data.makeACopy"></h3>
       <p class="data-panel-desc" data-i18n="data.makeACopyDesc"></p>
-      <label data-i18n="data.password">
-        <input type="password" id="export-password" data-i18n-placeholder="data.passwordPlaceholder" autocomplete="new-password">
-      </label>
+      <div id="export-password-list"></div>
+      <button id="export-password-add" type="button" data-i18n="data.addPassword"></button>
       <p id="export-password-error"></p>
       <button id="export-html-btn" disabled data-i18n="data.downloadHtml"></button>
       <p id="export-html-status"></p>
@@ -1264,6 +1469,10 @@
       <label><input type="radio" name="rel" value="parent"> <span data-i18n="rel.parent"></span></label>
       <label><input type="radio" name="rel" value="sibling"> <span data-i18n="rel.sibling"></span></label>
     </fieldset>
+    <div id="ar-second-parent-row" style="display:none">
+      <div class="ar-second-parent-legend" data-i18n="rel.otherParent"></div>
+      <div id="ar-second-parent-options"></div>
+    </div>
     <form id="add-relative-form">
       <label data-i18n="rel.firstName"> <input id="ar-givenname" type="text"></label>
       <label data-i18n="rel.lastName">  <input id="ar-surname"   type="text"></label>
@@ -1302,8 +1511,8 @@
       </div>
     </div>
 
-    <div style="text-align:center;margin:4px 0">
-      <button id="relation-swap-btn" title="Swap A and B" style="background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;padding:0">&#x21C5;</button>
+    <div id="relation-swap-row">
+      <button id="relation-swap-btn" title="Swap A and B">&#x21C5;</button>
     </div>
 
     <div class="relation-slot">
@@ -1338,31 +1547,75 @@
       <button type="button" id="panel-img-remove-btn">&#x2715; Remove</button>
     </div>
     <div id="panel-view">
+      <button id="panel-back" style="display:none" data-i18n="person.back">← Back</button>
       <h2 id="panel-name"></h2>
       <p id="panel-id" style="display:none"></p>
       <div id="panel-details">
         <p id="panel-birth"></p>
         <p id="panel-death"></p>
       </div>
+      <div id="panel-parents" style="display:none">
+        <div id="panel-father"></div>
+        <div id="panel-mother"></div>
+      </div>
+      <div id="panel-spouse" style="display:none">
+        <div id="panel-spouse-name"></div>
+        <div id="panel-spouse-marriage"></div>
+      </div>
+      <div id="panel-notes" style="display:none"></div>
       <button id="panel-edit-btn"><span aria-hidden="true">&#x270E;</span> <span data-i18n="panel.edit"></span></button>
       <button id="panel-relation-btn" data-i18n="relation.addBtn"><span aria-hidden="true">+</span> </button>
       <button id="panel-crosshair-btn"><span aria-hidden="true">&#x2316;</span> <span data-i18n="panel.setHome"></span></button>
     </div>
     <form id="panel-edit-form" style="display:none">
-      <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
-      <label data-i18n="person.lastName">  <input id="edit-surname"   type="text"></label>
-      <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" data-i18n-placeholder="date.placeholder"></label>
-      <p id="edit-dob-warning" class="field-warning" style="display:none"></p>
-      <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" data-i18n-placeholder="date.placeholder"></label>
-      <p id="edit-dod-warning" class="field-warning" style="display:none"></p>
-      <label data-i18n="person.birthplace"> <input id="edit-pob"       type="text"></label>
-      <label data-i18n="person.sex">
-        <select id="edit-sex">
-          <option value="M" data-i18n="person.male"></option>
-          <option value="F" data-i18n="person.female"></option>
-          <option value="other" data-i18n="person.other"></option>
-        </select>
-      </label>
+      <div class="form-row">
+        <label data-i18n="person.firstName"><input id="edit-givenname" type="text"></label>
+        <label data-i18n="person.lastName"><input id="edit-surname" type="text"></label>
+      </div>
+      <div class="form-row">
+        <div>
+          <label data-i18n="person.born.label"><input id="edit-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
+          <p id="edit-dob-warning" class="field-warning" style="display:none"></p>
+        </div>
+        <div>
+          <label data-i18n="person.died.label"><input id="edit-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
+          <p id="edit-dod-warning" class="field-warning" style="display:none"></p>
+        </div>
+      </div>
+      <div class="form-row">
+        <label data-i18n="person.birthplace"><input id="edit-pob" type="text"></label>
+        <label data-i18n="person.sex">
+          <select id="edit-sex">
+            <option value="M" data-i18n="person.male"></option>
+            <option value="F" data-i18n="person.female"></option>
+            <option value="other" data-i18n="person.other"></option>
+          </select>
+        </label>
+      </div>
+      <div class="edit-section-label" data-i18n="person.parents">Parents</div>
+      <label data-i18n="person.father">Father</label>
+      <div class="person-picker" id="edit-father-picker">
+        <input type="text"   id="edit-father-search"  autocomplete="off" data-i18n-placeholder="person.searchPlaceholder">
+        <input type="hidden" id="edit-father-pointer">
+        <button type="button" id="edit-father-clear" data-i18n="person.clear">×</button>
+        <ul id="edit-father-results" class="person-picker-results" style="display:none"></ul>
+      </div>
+      <label data-i18n="person.mother">Mother</label>
+      <div class="person-picker" id="edit-mother-picker">
+        <input type="text"   id="edit-mother-search"  autocomplete="off" data-i18n-placeholder="person.searchPlaceholder">
+        <input type="hidden" id="edit-mother-pointer">
+        <button type="button" id="edit-mother-clear" data-i18n="person.clear">×</button>
+        <ul id="edit-mother-results" class="person-picker-results" style="display:none"></ul>
+      </div>
+      <div id="edit-marriage-section" style="display:none">
+        <div class="edit-section-label" data-i18n="person.marriage">Marriage</div>
+        <div class="form-row">
+          <label data-i18n="person.marriageDate"><input id="edit-dom" type="text" data-i18n-placeholder="date.placeholder"></label>
+          <label data-i18n="person.marriagePlace"><input id="edit-pom" type="text"></label>
+        </div>
+      </div>
+      <div class="edit-section-label" data-i18n="person.notes">Notes</div>
+      <textarea id="edit-notes" rows="5" data-i18n-placeholder="person.notesPlaceholder"></textarea>
       <div class="edit-actions">
         <button type="button" id="edit-cancel-btn" data-i18n="btn.cancel"></button>
         <button type="submit" id="edit-save-btn" data-i18n="btn.save"></button>
@@ -1412,7 +1665,7 @@
   <div id="webhook-success-modal">
     <div id="remove-modal-box">
       <p data-i18n="webhook.thankYou"></p>
-      <p id="webhook-success-email" style="margin:0 0 20px;font-size:14px;font-family:Arial,sans-serif;line-height:1.4"></p>
+      <p id="webhook-success-email"></p>
       <div id="remove-modal-actions">
         <button id="webhook-success-close" data-i18n="webhook.close"></button>
       </div>
@@ -1451,6 +1704,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Drzewo Genealogiczne</title>
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Family Tree&quot;,&quot;short_name&quot;:&quot;Family Tree&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23ffffff&quot;,&quot;theme_color&quot;:&quot;%233498db&quot;,&quot;icons&quot;:[]}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Family Tree">
   <style type="text/css">
     :root {
       --bg:          #ffffff;
@@ -1496,6 +1754,7 @@
       background: var(--bg);
     }
     #login-bg {
+      display: none;
       position: fixed;
       inset: 0;
       width: 100%;
@@ -1507,6 +1766,7 @@
       pointer-events: none;
     }
     #login {
+      display: none;
       position: relative;
       z-index: 1;
       background-color: var(--surface-2);
@@ -1630,7 +1890,8 @@
     #birthday-btn,
     #about-btn,
     #settings-btn,
-    #data-btn {
+    #data-btn,
+    #relation-btn {
       position: fixed;
       right: 16px;
       z-index: 5;
@@ -1648,14 +1909,16 @@
       justify-content: center;
       will-change: transform;
     }
-    #birthday-btn { top: 16px; right: 148px; position: fixed; }
+    #birthday-btn { top: 16px; right: 148px; }
     #about-btn    { top: 16px; right: 104px; }
     #settings-btn { top: 16px; right: 60px; }
     #data-btn     { top: 16px; right: 16px; }
+    #relation-btn { top: 16px; right: 192px; font-size: 15px; }
     #birthday-btn.visible,
     #about-btn.visible,
     #settings-btn.visible,
-    #data-btn.visible {
+    #data-btn.visible,
+    #relation-btn.visible {
       display: flex;
     }
     #data-badge {
@@ -1726,6 +1989,21 @@
       border-top: 1px solid var(--border);
       margin: 16px 0;
     }
+    .about-text {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0 0 12px;
+    }
+    .about-text-muted {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+    #birthday-btn span { filter: grayscale(1); }
     #data-panel label {
       display: block;
       font-family: Arial, sans-serif;
@@ -1735,6 +2013,7 @@
     }
     #data-panel input[type="text"],
     #data-panel input[type="email"],
+    #data-panel input[type="password"],
     #data-panel textarea {
       width: 100%;
       box-sizing: border-box;
@@ -1828,6 +2107,17 @@
       font-family: Arial, sans-serif;
       font-size: 13px;
       color: var(--text);
+    }
+    hr + .toggle-row { margin-top: 4px; }
+    .panel-select {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
     }
     .toggle-switch {
       position: relative;
@@ -1970,6 +2260,92 @@
     #add-relative-save:disabled { background: var(--btn-disabled); cursor: default; }
     #edit-cancel-btn,
     #add-relative-cancel { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .panel-unknown { color: var(--text-muted); font-style: italic; }
+    #panel-parents { margin-top: 6px; font-size: 13px; line-height: 1.7; }
+    #panel-parents a { color: var(--text); text-decoration: underline; cursor: pointer; }
+    #panel-parents a:hover { opacity: 0.75; }
+    #panel-spouse { margin-top: 6px; font-size: 13px; line-height: 1.7; }
+    #panel-spouse a { color: var(--text); text-decoration: underline; cursor: pointer; }
+    #panel-spouse a:hover { opacity: 0.75; }
+    #panel-spouse-marriage { color: var(--text-muted); font-size: 12px; }
+    #panel-back {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0 0 4px 0;
+      text-decoration: underline;
+    }
+    #panel-back:hover { color: var(--text); }
+    .edit-section-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 14px;
+      margin-bottom: 2px;
+    }
+    .person-picker { position: relative; }
+    .person-picker input[type="text"] { padding-right: 28px; }
+    .person-picker button {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 2px;
+    }
+    .person-picker button:hover { color: var(--text); }
+    .person-picker-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      list-style: none;
+      margin: 2px 0 0;
+      padding: 0;
+    }
+    .person-picker-results li {
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: Monaco, monospace;
+    }
+    .person-picker-results li:hover { background: var(--surface-3, var(--border)); }
+    .picker-warn { color: #e67e22; margin-left: 4px; }
+    #panel-notes {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre-wrap;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    #panel-edit-form textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 13px;
+      padding: 5px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      resize: vertical;
+    }
     .settings-row {
       display: flex;
       gap: 8px;
@@ -1986,6 +2362,33 @@
     #export-html-btn { width: 100%; background: var(--btn-primary); color: #fff; }
     #export-html-btn:hover { background: var(--btn-hover); }
     #export-html-btn:disabled { background: var(--btn-disabled); cursor: default; }
+    #export-password-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+    .export-pw-row { display: flex; gap: 4px; align-items: center; }
+    .export-pw-row input { flex: 1; margin-bottom: 0 !important; }
+    .export-pw-remove,
+    .export-pw-toggle {
+      background: none !important;
+      border: none !important;
+      padding: 0 4px !important;
+      font-size: 15px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .export-pw-remove:hover { color: #c0392b; }
+    .export-pw-toggle[data-revealed="true"] { color: var(--btn-primary); }
+    #export-password-add {
+      background: none !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-muted);
+      font-size: 12px !important;
+      padding: 3px 8px !important;
+      margin-bottom: 6px;
+      width: auto !important;
+      align-self: flex-start;
+    }
+    #export-password-add:hover { color: var(--text); border-color: var(--text-muted) !important; }
     #export-password-error {
       font-size: 11px;
       font-family: Arial, sans-serif;
@@ -2307,6 +2710,23 @@
       font-size: 14px;
     }
     #webhook-success-close:hover { background: var(--btn-hover); }
+    #webhook-success-email { margin: 0 0 20px; font-size: 14px; font-family: Arial, sans-serif; line-height: 1.4; }
+    #has-edits-desc { margin-bottom: 12px; }
+    #export-gedcom-zip-btn { margin-top: 6px; }
+    #data-contact-prompt { margin: 12px 0 6px; }
+    #relation-swap-row { text-align: center; margin: 4px 0; }
+    #relation-swap-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+    }
     #add-relative-panel {
       position: fixed;
       top: 0;
@@ -2368,6 +2788,29 @@
       align-items: center;
       gap: 6px;
     }
+    #ar-second-parent-row {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 0 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #ar-second-parent-row .ar-second-parent-legend {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    #ar-second-parent-options label {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
     #add-relative-form label {
       display: block;
       font-size: 11px;
@@ -2398,9 +2841,6 @@
       color: #c0392b;
       font-size: 0.85em;
       margin: 2px 0 4px;
-    }
-    #relation-btn {
-      top: 16px; right: 192px; position: fixed;
     }
     #relation-panel {
       position: fixed;
@@ -2572,6 +3012,16 @@
       text-align: center;
     }
     #panel-relation-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    @media (min-width: 900px) {
+      #person-panel {
+        width: 480px;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 12px;
+      }
+    }
     @media (max-width: 600px) {
       #search-container {
         top: 62px;
@@ -2589,16 +3039,18 @@
       #relation-panel {
         width: 100%;
       }
+      .form-row {
+        display: block;
+      }
     }
   </style>
 </head>
-<body>
-  <script>if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');<\/script>
-  <button id="birthday-btn" style="position:fixed"><span style="filter:grayscale(1)">&#127874;</span></button>
+<body><script>(function(){var ns=location.pathname.replace(/\/$/,'')||'/';var s=localStorage.getItem(ns+':theme');if(s?s==='dark':matchMedia('(prefers-color-scheme:dark)').matches)document.body.classList.add('dark');})()<\/script>
+  <button id="birthday-btn"><span>&#127874;</span></button>
   <button id="about-btn">&#x2139;&#xFE0E;</button>
   <button id="settings-btn">&#9881;</button>
   <button id="data-btn">&#8862;<span id="data-badge"></span></button>
-  <button id="relation-btn" style="display:none;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--nav-btn-bg);color:var(--text);box-shadow:0 1px 4px var(--shadow);cursor:pointer;font-size:15px;align-items:center;justify-content:center;z-index:5">&#8596;</button>
+  <button id="relation-btn">&#8596;</button>
   <div id="birthday-panel">
     <button id="birthday-close">&#x00D7;</button>
     <h2 data-i18n="birthday.title"></h2>
@@ -2607,13 +3059,13 @@
   <div id="about-panel">
     <button id="about-close">&#x00D7;</button>
     <h2 data-i18n="about.title"></h2>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:var(--text);line-height:1.6;margin:0 0 12px" data-i18n="about.p1"></p>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:var(--text);line-height:1.6;margin:0 0 12px" data-i18n="about.p2"></p>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:var(--text);line-height:1.6;margin:0 0 12px" data-i18n="about.p3"></p>
+    <p class="about-text" data-i18n="about.p1"></p>
+    <p class="about-text" data-i18n="about.p2"></p>
+    <p class="about-text" data-i18n="about.p3"></p>
     <hr>
-    <p style="font-family:Arial,sans-serif;font-size:11px;color:var(--text-muted);line-height:1.5;margin:0" data-i18n="about.kudos"></p>
+    <p class="about-text-muted" data-i18n="about.kudos"></p>
     <hr>
-    <p style="font-family:Arial,sans-serif;font-size:11px;color:var(--text-muted);line-height:1.5;margin:0" data-i18n="about.privacy"></p>
+    <p class="about-text-muted" data-i18n="about.privacy"></p>
   </div>
   <div id="settings-panel">
     <button id="settings-close">&#x00D7;</button>
@@ -2626,17 +3078,17 @@
       </label>
     </div>
     <hr>
-    <div class="toggle-row" style="margin-top:4px">
+    <div class="toggle-row">
       <span data-i18n="settings.language"></span>
-      <select id="lang-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
+      <select id="lang-select" class="panel-select">
         <option value="en">EN</option>
         <option value="pl">PL</option>
       </select>
     </div>
     <hr>
-    <div class="toggle-row" style="margin-top:4px">
+    <div class="toggle-row">
       <span data-i18n="settings.layout"></span>
-      <select id="layout-select" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer">
+      <select id="layout-select" class="panel-select">
         <option value="TD" data-i18n="settings.layout.td"></option>
         <option value="LR" data-i18n="settings.layout.lr"></option>
       </select>
@@ -2646,9 +3098,9 @@
     <button id="data-close">&#x00D7;</button>
 
     <h2 data-i18n="data.localEdits"></h2>
-    <p id="has-edits-desc" class="data-panel-desc" style="margin-bottom:12px;display:none" data-i18n="data.hasEdits"></p>
+    <p id="has-edits-desc" class="data-panel-desc" style="display:none" data-i18n="data.hasEdits"></p>
     <div id="settings-edit-count"></div>
-    <p class="data-panel-desc" style="margin:12px 0 6px" data-i18n="data.contactPrompt"></p>
+    <p id="data-contact-prompt" class="data-panel-desc" data-i18n="data.contactPrompt"></p>
     <textarea id="webhook-message" data-i18n-placeholder="data.messagePlaceholder"></textarea>
     <input type="email" id="webhook-email" data-i18n-placeholder="data.emailPlaceholder" />
     <p id="webhook-email-error"></p>
@@ -2668,10 +3120,17 @@
 
       <hr>
 
+      <h3 data-i18n="data.exportGedcom"></h3>
+      <p class="data-panel-desc" data-i18n="data.exportGedcomDesc"></p>
+      <button id="export-gedcom-btn" data-i18n="data.downloadGedcom"></button>
+      <button id="export-gedcom-zip-btn" data-i18n="data.downloadGedcomZip"></button>
+
+      <hr>
+
       <h3 data-i18n="data.importGedcom"></h3>
       <p class="data-panel-desc" data-i18n="data.importGedcomDesc"></p>
       <label data-i18n="data.gedcomFiles"></label>
-      <input type="file" id="ged-file-input" multiple accept=".ged" />
+      <input type="file" id="ged-file-input" multiple accept=".ged,.zip" />
       <label data-i18n="data.rootPersonId"></label>
       <input type="text" id="settings-root-id" placeholder="e.g. @I500030@" />
       <button id="settings-merge-btn" data-i18n="data.mergeDownload"></button>
@@ -2681,9 +3140,8 @@
 
       <h3 data-i18n="data.makeACopy"></h3>
       <p class="data-panel-desc" data-i18n="data.makeACopyDesc"></p>
-      <label data-i18n="data.password">
-        <input type="password" id="export-password" data-i18n-placeholder="data.passwordPlaceholder" autocomplete="new-password">
-      </label>
+      <div id="export-password-list"></div>
+      <button id="export-password-add" type="button" data-i18n="data.addPassword"></button>
       <p id="export-password-error"></p>
       <button id="export-html-btn" disabled data-i18n="data.downloadHtml"></button>
       <p id="export-html-status"></p>
@@ -2711,6 +3169,10 @@
       <label><input type="radio" name="rel" value="parent"> <span data-i18n="rel.parent"></span></label>
       <label><input type="radio" name="rel" value="sibling"> <span data-i18n="rel.sibling"></span></label>
     </fieldset>
+    <div id="ar-second-parent-row" style="display:none">
+      <div class="ar-second-parent-legend" data-i18n="rel.otherParent"></div>
+      <div id="ar-second-parent-options"></div>
+    </div>
     <form id="add-relative-form">
       <label data-i18n="rel.firstName"> <input id="ar-givenname" type="text"></label>
       <label data-i18n="rel.lastName">  <input id="ar-surname"   type="text"></label>
@@ -2749,8 +3211,8 @@
       </div>
     </div>
 
-    <div style="text-align:center;margin:4px 0">
-      <button id="relation-swap-btn" title="Swap A and B" style="background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;padding:0">&#x21C5;</button>
+    <div id="relation-swap-row">
+      <button id="relation-swap-btn" title="Swap A and B">&#x21C5;</button>
     </div>
 
     <div class="relation-slot">
@@ -2785,31 +3247,75 @@
       <button type="button" id="panel-img-remove-btn">&#x2715; Remove</button>
     </div>
     <div id="panel-view">
+      <button id="panel-back" style="display:none" data-i18n="person.back">← Back</button>
       <h2 id="panel-name"></h2>
       <p id="panel-id" style="display:none"></p>
       <div id="panel-details">
         <p id="panel-birth"></p>
         <p id="panel-death"></p>
       </div>
+      <div id="panel-parents" style="display:none">
+        <div id="panel-father"></div>
+        <div id="panel-mother"></div>
+      </div>
+      <div id="panel-spouse" style="display:none">
+        <div id="panel-spouse-name"></div>
+        <div id="panel-spouse-marriage"></div>
+      </div>
+      <div id="panel-notes" style="display:none"></div>
       <button id="panel-edit-btn"><span aria-hidden="true">&#x270E;</span> <span data-i18n="panel.edit"></span></button>
       <button id="panel-relation-btn" data-i18n="relation.addBtn"><span aria-hidden="true">+</span> </button>
       <button id="panel-crosshair-btn"><span aria-hidden="true">&#x2316;</span> <span data-i18n="panel.setHome"></span></button>
     </div>
     <form id="panel-edit-form" style="display:none">
-      <label data-i18n="person.firstName"> <input id="edit-givenname" type="text"></label>
-      <label data-i18n="person.lastName">  <input id="edit-surname"   type="text"></label>
-      <label data-i18n="person.born.label">       <input id="edit-dob"       type="text" data-i18n-placeholder="date.placeholder"></label>
-      <p id="edit-dob-warning" class="field-warning" style="display:none"></p>
-      <label data-i18n="person.died.label">       <input id="edit-dod"       type="text" data-i18n-placeholder="date.placeholder"></label>
-      <p id="edit-dod-warning" class="field-warning" style="display:none"></p>
-      <label data-i18n="person.birthplace"> <input id="edit-pob"       type="text"></label>
-      <label data-i18n="person.sex">
-        <select id="edit-sex">
-          <option value="M" data-i18n="person.male"></option>
-          <option value="F" data-i18n="person.female"></option>
-          <option value="other" data-i18n="person.other"></option>
-        </select>
-      </label>
+      <div class="form-row">
+        <label data-i18n="person.firstName"><input id="edit-givenname" type="text"></label>
+        <label data-i18n="person.lastName"><input id="edit-surname" type="text"></label>
+      </div>
+      <div class="form-row">
+        <div>
+          <label data-i18n="person.born.label"><input id="edit-dob" type="text" data-i18n-placeholder="date.placeholder"></label>
+          <p id="edit-dob-warning" class="field-warning" style="display:none"></p>
+        </div>
+        <div>
+          <label data-i18n="person.died.label"><input id="edit-dod" type="text" data-i18n-placeholder="date.placeholder"></label>
+          <p id="edit-dod-warning" class="field-warning" style="display:none"></p>
+        </div>
+      </div>
+      <div class="form-row">
+        <label data-i18n="person.birthplace"><input id="edit-pob" type="text"></label>
+        <label data-i18n="person.sex">
+          <select id="edit-sex">
+            <option value="M" data-i18n="person.male"></option>
+            <option value="F" data-i18n="person.female"></option>
+            <option value="other" data-i18n="person.other"></option>
+          </select>
+        </label>
+      </div>
+      <div class="edit-section-label" data-i18n="person.parents">Parents</div>
+      <label data-i18n="person.father">Father</label>
+      <div class="person-picker" id="edit-father-picker">
+        <input type="text"   id="edit-father-search"  autocomplete="off" data-i18n-placeholder="person.searchPlaceholder">
+        <input type="hidden" id="edit-father-pointer">
+        <button type="button" id="edit-father-clear" data-i18n="person.clear">×</button>
+        <ul id="edit-father-results" class="person-picker-results" style="display:none"></ul>
+      </div>
+      <label data-i18n="person.mother">Mother</label>
+      <div class="person-picker" id="edit-mother-picker">
+        <input type="text"   id="edit-mother-search"  autocomplete="off" data-i18n-placeholder="person.searchPlaceholder">
+        <input type="hidden" id="edit-mother-pointer">
+        <button type="button" id="edit-mother-clear" data-i18n="person.clear">×</button>
+        <ul id="edit-mother-results" class="person-picker-results" style="display:none"></ul>
+      </div>
+      <div id="edit-marriage-section" style="display:none">
+        <div class="edit-section-label" data-i18n="person.marriage">Marriage</div>
+        <div class="form-row">
+          <label data-i18n="person.marriageDate"><input id="edit-dom" type="text" data-i18n-placeholder="date.placeholder"></label>
+          <label data-i18n="person.marriagePlace"><input id="edit-pom" type="text"></label>
+        </div>
+      </div>
+      <div class="edit-section-label" data-i18n="person.notes">Notes</div>
+      <textarea id="edit-notes" rows="5" data-i18n-placeholder="person.notesPlaceholder"></textarea>
       <div class="edit-actions">
         <button type="button" id="edit-cancel-btn" data-i18n="btn.cancel"></button>
         <button type="submit" id="edit-save-btn" data-i18n="btn.save"></button>
@@ -2859,7 +3365,7 @@
   <div id="webhook-success-modal">
     <div id="remove-modal-box">
       <p data-i18n="webhook.thankYou"></p>
-      <p id="webhook-success-email" style="margin:0 0 20px;font-size:14px;font-family:Arial,sans-serif;line-height:1.4"></p>
+      <p id="webhook-success-email"></p>
       <div id="remove-modal-actions">
         <button id="webhook-success-close" data-i18n="webhook.close"></button>
       </div>
@@ -2901,7 +3407,7 @@
 </html></script>
   <script id="app-data">
     /* __FAMILY_TREE_DATA_START__ */
-    const encryptedData = {
+const encryptedData = {
  "iterations": 5000000,
  "compressed": true,
  "nonce": "nC5gfAP1dz6J7MsV",
@@ -2914,7 +3420,7 @@
   }
  ]
 };
-    /* __FAMILY_TREE_DATA_END__ */
+/* __FAMILY_TREE_DATA_END__ */
   </script>
   <script id="app-code">
     !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t(e.parseGedcom={})}(this,function(e){var t,n=(function(e){var t=e.exports=function(e){return new n(e)};function n(e){this.value=e}function r(e,t,n){var r=[],u=[],f=!0;return function e(p){var s={},v=!0,d={node:n?o(p):p,node_:p,path:[].concat(r),parent:u[u.length-1],parents:u,key:r.slice(-1)[0],isRoot:0===r.length,level:r.length,circular:null,update:function(e,t){d.isRoot||(d.parent.node[d.key]=e),d.node=e,t&&(v=!1)},delete:function(e){delete d.parent.node[d.key],e&&(v=!1)},remove:function(e){a(d.parent.node)?d.parent.node.splice(d.key,1):delete d.parent.node[d.key],e&&(v=!1)},keys:null,before:function(e){s.before=e},after:function(e){s.after=e},pre:function(e){s.pre=e},post:function(e){s.post=e},stop:function(){f=!1},block:function(){v=!1}};if(!f)return d;function h(){if("object"==typeof d.node&&null!==d.node){d.keys&&d.node_===d.node||(d.keys=i(d.node)),d.isLeaf=0==d.keys.length;for(var e=0;e<u.length;e++)if(u[e].node_===p){d.circular=u[e];break}}else d.isLeaf=!0,d.keys=null;d.notLeaf=!d.isLeaf,d.notRoot=!d.isRoot}h();var y=t.call(d,d.node);return void 0!==y&&d.update&&d.update(y),s.before&&s.before.call(d,d.node),v?("object"!=typeof d.node||null===d.node||d.circular||(u.push(d),h(),c(d.keys,function(t,o){r.push(t),s.pre&&s.pre.call(d,d.node[t],t);var i=e(d.node[t]);n&&l.call(d.node,t)&&(d.node[t]=i.node),i.isLast=o==d.keys.length-1,i.isFirst=0==o,s.post&&s.post.call(d,i),r.pop()}),u.pop()),s.after&&s.after.call(d,d.node),d):d}(e).node}function o(e){if("object"==typeof e&&null!==e){var t;if(a(e))t=[];else if("[object Date]"===u(e))t=new Date(e.getTime?e.getTime():e);else if(function(e){return"[object RegExp]"===u(e)}(e))t=new RegExp(e);else if(function(e){return"[object Error]"===u(e)}(e))t={message:e.message};else if(function(e){return"[object Boolean]"===u(e)}(e))t=new Boolean(e);else if(function(e){return"[object Number]"===u(e)}(e))t=new Number(e);else if(function(e){return"[object String]"===u(e)}(e))t=new String(e);else if(Object.create&&Object.getPrototypeOf)t=Object.create(Object.getPrototypeOf(e));else if(e.constructor===Object)t={};else{var n=function(){};n.prototype=e.constructor&&e.constructor.prototype||e.__proto__||{},t=new n}return c(i(e),function(n){t[n]=e[n]}),t}return e}n.prototype.get=function(e){for(var t=this.value,n=0;n<e.length;n++){var r=e[n];if(!t||!l.call(t,r)){t=void 0;break}t=t[r]}return t},n.prototype.has=function(e){for(var t=this.value,n=0;n<e.length;n++){var r=e[n];if(!t||!l.call(t,r))return!1;t=t[r]}return!0},n.prototype.set=function(e,t){for(var n=this.value,r=0;r<e.length-1;r++){var o=e[r];l.call(n,o)||(n[o]={}),n=n[o]}return n[e[r]]=t,t},n.prototype.map=function(e){return r(this.value,e,!0)},n.prototype.forEach=function(e){return this.value=r(this.value,e,!1),this.value},n.prototype.reduce=function(e,t){var n=1===arguments.length,r=n?this.value:t;return this.forEach(function(t){this.isRoot&&n||(r=e.call(this,r,t))}),r},n.prototype.paths=function(){var e=[];return this.forEach(function(t){e.push(this.path)}),e},n.prototype.nodes=function(){var e=[];return this.forEach(function(t){e.push(this.node)}),e},n.prototype.clone=function(){var e=[],t=[];return function n(r){for(var u=0;u<e.length;u++)if(e[u]===r)return t[u];if("object"==typeof r&&null!==r){var a=o(r);return e.push(r),t.push(a),c(i(r),function(e){a[e]=n(r[e])}),e.pop(),t.pop(),a}return r}(this.value)};var i=Object.keys||function(e){var t=[];for(var n in e)t.push(n);return t};function u(e){return Object.prototype.toString.call(e)}var a=Array.isArray||function(e){return"[object Array]"===Object.prototype.toString.call(e)},c=function(e,t){if(e.forEach)return e.forEach(t);for(var n=0;n<e.length;n++)t(e[n],n,e)};c(i(n.prototype),function(e){t[e]=function(t){var r=[].slice.call(arguments,1),o=new n(t);return o[e].apply(o,r)}});var l=Object.hasOwnProperty||function(e,t){return t in e}}(t={exports:{}},t.exports),t.exports),r=/\s*(0|[1-9]+[0-9]*) (@[^@]+@ |)([A-Za-z0-9_]+)( [^\n\r]*|)/;function o(e){return function(t){return t.tag===e}}function i(e){return e.id=e.pointer,e.name=function(e){if("INDI"===e.tag){var t=(e.tree.filter(o("NAME"))||[])[0];return t?t.data.replace(/\//g,""):"?"}return"Family"}(e),e}function u(e){return e.tree.filter(function(e){return e.data&&"@"===e.data[0]}).map(function(t){return{source:e.pointer,target:t.data}})}e.d3ize=function(e){var t,n=e.filter(o("INDI")).map(i),r=e.filter(o("FAM")),a=r.map(i),c=(t=[]).concat.apply(t,r.map(u)),l=n.concat(a),f=l.reduce(function(e,t,n){return e[t.id]=n,e},{});return{nodes:l,links:c=c.map(function(e){return function(t){return{source:e[t.source],target:e[t.target]}}}(f))}},e.parse=function(e){var t={root:{tree:[]},level:0};return t.pointer=t.root,n(e.split("\n").map(function(e){var t=e.match(r);return t?{level:parseInt(t[1],10),pointer:t[2].trim(),tag:t[3].trim(),data:t[4].trim(),tree:[]}:null}).filter(function(e){return e}).reduce(function(e,t){if(t.level===e.level)e.pointer.tree.push(t);else if(t.level>e.level){var n=e.pointer;e.pointer=e.pointer.tree[e.pointer.tree.length-1],e.pointer.tree.push(t),e.pointer.up=n,e.level=t.level}else if(t.level<e.level){for(;t.level<=e.pointer.level&&e.pointer.up;)e.pointer=e.pointer.up;e.pointer.tree.push(t),e.level=t.level}return e},t).root.tree).map(function(e){delete e.up,delete e.level,this.update(e)})}});
@@ -3690,15 +4196,21 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'data.exportData':          'Export data',
     'data.exportDataDesc':      'Downloads all current tree data including your local edits as a data.js file.',
     'data.downloadDataJs':      'Download data.js',
+    'data.exportGedcom':        'Export to GEDCOM',
+    'data.exportGedcomDesc':    'Download the full tree as a .ged file compatible with most genealogy programs.',
+    'data.downloadGedcom':      'Download GEDCOM',
+    'data.downloadGedcomZip':   'Download GEDCOM + photos (.zip)',
     'data.importGedcom':        'Import GEDCOM',
     'data.importGedcomDesc':    'Converts a .ged file exported from a genealogy app into the format used by this website. This does not load data into the tree — it downloads a data.js file that a developer then integrates manually. Intended for developers only.',
-    'data.gedcomFiles':         'Select .ged files (one or more)',
+    'data.gedcomFiles':         'Select .ged or .zip files (one or more)',
     'data.rootPersonId':        'Root person ID',
     'data.mergeDownload':       'Merge & Download data.js',
     'data.makeACopy':           'Make a copy of this site',
     'data.makeACopyDesc':       'Creates a self-contained index.html with all family data encrypted inside it using the password you choose. Anyone with the password can open it in a browser — no server or internet connection needed.',
     'data.password':            'Password',
     'data.passwordPlaceholder': 'choose a password',
+    'data.addPassword':         '+ Add password',
+    'data.passwordRemove':      'Remove',
     'data.downloadHtml':        'Download index.html',
 
     // Search
@@ -3718,6 +4230,19 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'person.female':            'Female',
     'person.other':             'Other',
     'person.remove':            'Remove person',
+    'person.parents':           'Parents',
+    'person.father':            'Father',
+    'person.mother':            'Mother',
+    'person.unknown':           'Unknown',
+    'person.back':              '← Back',
+    'person.searchPlaceholder': 'Search person…',
+    'person.clear':             '×',
+    'person.spouse':            'Spouse',
+    'person.marriage':          'Marriage',
+    'person.marriageDate':      'Date of marriage',
+    'person.marriagePlace':     'Place of marriage',
+    'person.notes':             'Notes',
+    'person.notesPlaceholder':  'Add notes about this person…',
 
     // Add relative panel
     'rel.title':                'Add relative to',
@@ -3735,6 +4260,9 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     // Add relative errors
     'rel.errorNameRequired':    'Enter at least a first or last name.',
     'rel.errorParentSlotsFull': 'Both parent slots are already filled.',
+    'rel.otherParent':          'Other parent',
+    'rel.unknownParent':        'Unknown (no partner)',
+    'rel.errorFamilyNotFound':  'Could not find a family for the selected parents.',
 
     // Person panel buttons
     'panel.edit':               'Edit',
@@ -3832,6 +4360,16 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'relation.summary':         (a, rel, b) => `${a} is ${b}'s ${rel}`,
     'relation.showSteps':       'Show path',
     'relation.spouse':          'spouse',
+
+    // Sample tree banner
+    'sample.label':             'You are viewing a sample family tree.',
+    'sample.import':            'Import your GEDCOM',
+    'sample.scratch':           'Start from scratch',
+    'sample.dismiss':           'Dismiss',
+
+    // Start-from-scratch first person prompt
+    'sample.addFirst':          'Add your first person',
+    'sample.create':            'Create',
   },
 
   pl: {
@@ -3866,15 +4404,21 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'data.exportData':          'Eksport danych',
     'data.exportDataDesc':      'Pobiera wszystkie dane drzewa razem z lokalnymi zmianami jako plik data.js.',
     'data.downloadDataJs':      'Pobierz data.js',
+    'data.exportGedcom':        'Eksport do GEDCOM',
+    'data.exportGedcomDesc':    'Pobierz całe drzewo jako plik .ged kompatybilny z większością programów genealogicznych.',
+    'data.downloadGedcom':      'Pobierz GEDCOM',
+    'data.downloadGedcomZip':   'Pobierz GEDCOM + zdjęcia (.zip)',
     'data.importGedcom':        'Import GEDCOM',
     'data.importGedcomDesc':    'Konwertuje plik .ged wyeksportowany z aplikacji genealogicznej do formatu używanego przez tę stronę. Nie ładuje danych do drzewa — pobiera plik data.js do ręcznej integracji. Tylko dla deweloperów.',
-    'data.gedcomFiles':         'Wybierz pliki .ged (jeden lub więcej)',
+    'data.gedcomFiles':         'Wybierz pliki .ged lub .zip (jeden lub więcej)',
     'data.rootPersonId':        'ID osoby głównej',
     'data.mergeDownload':       'Połącz i pobierz data.js',
     'data.makeACopy':           'Utwórz kopię tej strony',
     'data.makeACopyDesc':       'Tworzy samodzielny plik index.html z zaszyfrowanymi danymi. Każdy znający hasło może otworzyć go w przeglądarce — bez serwera i internetu.',
     'data.password':            'Hasło',
     'data.passwordPlaceholder': 'wybierz hasło',
+    'data.addPassword':         '+ Dodaj hasło',
+    'data.passwordRemove':      'Usuń',
     'data.downloadHtml':        'Pobierz index.html',
 
     'search.placeholder':       'Szukaj osoby…',
@@ -3892,6 +4436,19 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'person.female':            'Kobieta',
     'person.other':             'Inne',
     'person.remove':            'Usuń osobę',
+    'person.parents':           'Rodzice',
+    'person.father':            'Ojciec',
+    'person.mother':            'Matka',
+    'person.unknown':           'Nieznana/y',
+    'person.back':              '← Wróć',
+    'person.searchPlaceholder': 'Szukaj osoby…',
+    'person.clear':             '×',
+    'person.spouse':            'Małżonek/Partnerka',
+    'person.marriage':          'Ślub',
+    'person.marriageDate':      'Data ślubu',
+    'person.marriagePlace':     'Miejsce ślubu',
+    'person.notes':             'Notatki',
+    'person.notesPlaceholder':  'Dodaj notatki o tej osobie…',
 
     'rel.title':                'Dodaj krewnego do',
     'rel.relationship':         'Pokrewieństwo',
@@ -3907,6 +4464,9 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     'rel.errorNameRequired':    'Podaj imię lub nazwisko.',
     'rel.errorParentSlotsFull': 'Oba miejsca dla rodziców są już zajęte.',
+    'rel.otherParent':          'Drugi rodzic',
+    'rel.unknownParent':        'Nieznany (brak partnera)',
+    'rel.errorFamilyNotFound':  'Nie znaleziono rodziny dla wybranych rodziców.',
 
     // Person panel buttons
     'panel.edit':               'Edytuj',
@@ -3996,6 +4556,16 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     'relation.summary':         (a, rel, b) => `${a} jest ${rel} ${b}`,
     'relation.showSteps':       'Pokaż ścieżkę',
     'relation.spouse':          'małżonek/małżonka/partner/partnerka',
+
+    // Sample tree banner
+    'sample.label':             'Przeglądasz przykładowe drzewo genealogiczne.',
+    'sample.import':            'Importuj GEDCOM',
+    'sample.scratch':           'Zacznij od zera',
+    'sample.dismiss':           'Zamknij',
+
+    // Start-from-scratch first person prompt
+    'sample.addFirst':          'Dodaj pierwszą osobę',
+    'sample.create':            'Utwórz',
   },
 };
 
@@ -4233,6 +4803,125 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 }
 
 
+    !function(f){typeof module!='undefined'&&typeof exports=='object'?module.exports=f():typeof define!='undefined'&&define.amd?define(f):(typeof self!='undefined'?self:this).fflate=f()}(function(){var _e={};"use strict";var t=(typeof module!='undefined'&&typeof exports=='object'?function(_f){"use strict";var e,t=";var __w=require('worker_threads');__w.parentPort.on('message',function(m){onmessage({data:m})}),postMessage=function(m,t){__w.parentPort.postMessage(m,t)},close=process.exit;self=global";try{e=require("worker_threads").Worker}catch(e){}exports.default=e?function(r,n,o,a,s){var u=!1,i=new e(r+t,{eval:!0}).on("error",(function(e){return s(e,null)})).on("message",(function(e){return s(null,e)})).on("exit",(function(e){e&&!u&&s(Error("exited with code "+e),null)}));return i.postMessage(o,a),i.terminate=function(){return u=!0,e.prototype.terminate.call(i)},i}:function(e,t,r,n,o){setImmediate((function(){return o(Error("async operations unsupported - update to Node 12+ (or Node 10-11 with the --experimental-worker CLI flag)"),null)}));var a=function(){};return{terminate:a,postMessage:a}};return _f}:function(_f){"use strict";var e={};_f.default=function(r,t,s,a,n){var o=new Worker(e[t]||(e[t]=URL.createObjectURL(new Blob([r+';addEventListener("error",function(e){e=e.error;postMessage({$e$:[e.message,e.code,e.stack]})})'],{type:"text/javascript"}))));return o.onmessage=function(e){var r=e.data,t=r.$e$;if(t){var s=Error(t[0]);s.code=t[1],s.stack=t[2],n(s,null)}else n(null,r)},o.postMessage(s,a),o};return _f})({}),n=Uint8Array,r=Uint16Array,e=Int32Array,i=new n([0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,0,0,0]),o=new n([0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,0,0]),s=new n([16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15]),a=function(t,n){for(var i=new r(31),o=0;o<31;++o)i[o]=n+=1<<t[o-1];var s=new e(i[30]);for(o=1;o<30;++o)for(var a=i[o];a<i[o+1];++a)s[a]=a-i[o]<<5|o;return{b:i,r:s}},u=a(i,2),h=u.b,f=u.r;h[28]=258,f[258]=28;for(var l=a(o,0),c=l.b,p=l.r,v=new r(32768),d=0;d<32768;++d){var g=(43690&d)>>1|(21845&d)<<1;v[d]=((65280&(g=(61680&(g=(52428&g)>>2|(13107&g)<<2))>>4|(3855&g)<<4))>>8|(255&g)<<8)>>1}var y=function(t,n,e){for(var i=t.length,o=0,s=new r(n);o<i;++o)t[o]&&++s[t[o]-1];var a,u=new r(n);for(o=1;o<n;++o)u[o]=u[o-1]+s[o-1]<<1;if(e){a=new r(1<<n);var h=15-n;for(o=0;o<i;++o)if(t[o])for(var f=o<<4|t[o],l=n-t[o],c=u[t[o]-1]++<<l,p=c|(1<<l)-1;c<=p;++c)a[v[c]>>h]=f}else for(a=new r(i),o=0;o<i;++o)t[o]&&(a[o]=v[u[t[o]-1]++]>>15-t[o]);return a},m=new n(288);for(d=0;d<144;++d)m[d]=8;for(d=144;d<256;++d)m[d]=9;for(d=256;d<280;++d)m[d]=7;for(d=280;d<288;++d)m[d]=8;var b=new n(32);for(d=0;d<32;++d)b[d]=5;var w=y(m,9,0),x=y(m,9,1),z=y(b,5,0),k=y(b,5,1),M=function(t){for(var n=t[0],r=1;r<t.length;++r)t[r]>n&&(n=t[r]);return n},S=function(t,n,r){var e=n/8|0;return(t[e]|t[e+1]<<8)>>(7&n)&r},A=function(t,n){var r=n/8|0;return(t[r]|t[r+1]<<8|t[r+2]<<16)>>(7&n)},T=function(t){return(t+7)/8|0},D=function(t,r,e){return(null==r||r<0)&&(r=0),(null==e||e>t.length)&&(e=t.length),new n(t.subarray(r,e))};_e.FlateErrorCode={UnexpectedEOF:0,InvalidBlockType:1,InvalidLengthLiteral:2,InvalidDistance:3,StreamFinished:4,NoStreamHandler:5,InvalidHeader:6,NoCallback:7,InvalidUTF8:8,ExtraFieldTooLong:9,InvalidDate:10,FilenameTooLong:11,StreamFinishing:12,InvalidZipData:13,UnknownCompressionMethod:14};var C=["unexpected EOF","invalid block type","invalid length/literal","invalid distance","stream finished","no stream handler",,"no callback","invalid UTF-8 data","extra field too long","date not in range 1980-2099","filename too long","stream finishing","invalid zip data"],I=function(t,n,r){var e=Error(n||C[t]);if(e.code=t,Error.captureStackTrace&&Error.captureStackTrace(e,I),!r)throw e;return e},U=function(t,r,e,a){var u=t.length,f=a?a.length:0;if(!u||r.f&&!r.l)return e||new n(0);var l=!e,p=l||2!=r.i,v=r.i;l&&(e=new n(3*u));var d=function(t){var r=e.length;if(t>r){var i=new n(Math.max(2*r,t));i.set(e),e=i}},g=r.f||0,m=r.p||0,b=r.b||0,w=r.l,z=r.d,C=r.m,U=r.n,F=8*u;do{if(!w){g=S(t,m,1);var E=S(t,m+1,3);if(m+=3,!E){var Z=t[(J=T(m)+4)-4]|t[J-3]<<8,q=J+Z;if(q>u){v&&I(0);break}p&&d(b+Z),e.set(t.subarray(J,q),b),r.b=b+=Z,r.p=m=8*q,r.f=g;continue}if(1==E)w=x,z=k,C=9,U=5;else if(2==E){var O=S(t,m,31)+257,G=S(t,m+10,15)+4,L=O+S(t,m+5,31)+1;m+=14;for(var H=new n(L),j=new n(19),N=0;N<G;++N)j[s[N]]=S(t,m+3*N,7);m+=3*G;var P=M(j),B=(1<<P)-1,Y=y(j,P,1);for(N=0;N<L;){var J,K=Y[S(t,m,B)];if(m+=15&K,(J=K>>4)<16)H[N++]=J;else{var Q=0,R=0;for(16==J?(R=3+S(t,m,3),m+=2,Q=H[N-1]):17==J?(R=3+S(t,m,7),m+=3):18==J&&(R=11+S(t,m,127),m+=7);R--;)H[N++]=Q}}var V=H.subarray(0,O),W=H.subarray(O);C=M(V),U=M(W),w=y(V,C,1),z=y(W,U,1)}else I(1);if(m>F){v&&I(0);break}}p&&d(b+131072);for(var X=(1<<C)-1,$=(1<<U)-1,_=m;;_=m){var tt=(Q=w[A(t,m)&X])>>4;if((m+=15&Q)>F){v&&I(0);break}if(Q||I(2),tt<256)e[b++]=tt;else{if(256==tt){_=m,w=null;break}var nt=tt-254;tt>264&&(nt=S(t,m,(1<<(it=i[N=tt-257]))-1)+h[N],m+=it);var rt=z[A(t,m)&$],et=rt>>4;if(rt||I(3),m+=15&rt,W=c[et],et>3){var it=o[et];W+=A(t,m)&(1<<it)-1,m+=it}if(m>F){v&&I(0);break}p&&d(b+131072);var ot=b+nt;if(b<W){var st=f-W,at=Math.min(W,ot);for(st+b<0&&I(3);b<at;++b)e[b]=a[st+b]}for(;b<ot;++b)e[b]=e[b-W]}}r.l=w,r.p=_,r.b=b,r.f=g,w&&(g=1,r.m=C,r.d=z,r.n=U)}while(!g);return b!=e.length&&l?D(e,0,b):e.subarray(0,b)},F=function(t,n,r){var e=n/8|0;t[e]|=r<<=7&n,t[e+1]|=r>>8},E=function(t,n,r){var e=n/8|0;t[e]|=r<<=7&n,t[e+1]|=r>>8,t[e+2]|=r>>16},Z=function(t,e){for(var i=[],o=0;o<t.length;++o)t[o]&&i.push({s:o,f:t[o]});var s=i.length,a=i.slice();if(!s)return{t:N,l:0};if(1==s){var u=new n(i[0].s+1);return u[i[0].s]=1,{t:u,l:1}}i.sort((function(t,n){return t.f-n.f})),i.push({s:-1,f:25001});var h=i[0],f=i[1],l=0,c=1,p=2;for(i[0]={s:-1,f:h.f+f.f,l:h,r:f};c!=s-1;)h=i[i[l].f<i[p].f?l++:p++],f=i[l!=c&&i[l].f<i[p].f?l++:p++],i[c++]={s:-1,f:h.f+f.f,l:h,r:f};var v=a[0].s;for(o=1;o<s;++o)a[o].s>v&&(v=a[o].s);var d=new r(v+1),g=q(i[c-1],d,0);if(g>e){o=0;var y=0,m=g-e,b=1<<m;for(a.sort((function(t,n){return d[n.s]-d[t.s]||t.f-n.f}));o<s;++o){var w=a[o].s;if(!(d[w]>e))break;y+=b-(1<<g-d[w]),d[w]=e}for(y>>=m;y>0;){var x=a[o].s;d[x]<e?y-=1<<e-d[x]++-1:++o}for(;o>=0&&y;--o){var z=a[o].s;d[z]==e&&(--d[z],++y)}g=e}return{t:new n(d),l:g}},q=function(t,n,r){return-1==t.s?Math.max(q(t.l,n,r+1),q(t.r,n,r+1)):n[t.s]=r},O=function(t){for(var n=t.length;n&&!t[--n];);for(var e=new r(++n),i=0,o=t[0],s=1,a=function(t){e[i++]=t},u=1;u<=n;++u)if(t[u]==o&&u!=n)++s;else{if(!o&&s>2){for(;s>138;s-=138)a(32754);s>2&&(a(s>10?s-11<<5|28690:s-3<<5|12305),s=0)}else if(s>3){for(a(o),--s;s>6;s-=6)a(8304);s>2&&(a(s-3<<5|8208),s=0)}for(;s--;)a(o);s=1,o=t[u]}return{c:e.subarray(0,i),n:n}},G=function(t,n){for(var r=0,e=0;e<n.length;++e)r+=t[e]*n[e];return r},L=function(t,n,r){var e=r.length,i=T(n+2);t[i]=255&e,t[i+1]=e>>8,t[i+2]=255^t[i],t[i+3]=255^t[i+1];for(var o=0;o<e;++o)t[i+o+4]=r[o];return 8*(i+4+e)},H=function(t,n,e,a,u,h,f,l,c,p,v){F(n,v++,e),++u[256];for(var d=Z(u,15),g=d.t,x=d.l,k=Z(h,15),M=k.t,S=k.l,A=O(g),T=A.c,D=A.n,C=O(M),I=C.c,U=C.n,q=new r(19),H=0;H<T.length;++H)++q[31&T[H]];for(H=0;H<I.length;++H)++q[31&I[H]];for(var j=Z(q,7),N=j.t,P=j.l,B=19;B>4&&!N[s[B-1]];--B);var Y,J,K,Q,R=p+5<<3,V=G(u,m)+G(h,b)+f,W=G(u,g)+G(h,M)+f+14+3*B+G(q,N)+2*q[16]+3*q[17]+7*q[18];if(c>=0&&R<=V&&R<=W)return L(n,v,t.subarray(c,c+p));if(F(n,v,1+(W<V)),v+=2,W<V){Y=y(g,x,0),J=g,K=y(M,S,0),Q=M;var X=y(N,P,0);for(F(n,v,D-257),F(n,v+5,U-1),F(n,v+10,B-4),v+=14,H=0;H<B;++H)F(n,v+3*H,N[s[H]]);v+=3*B;for(var $=[T,I],_=0;_<2;++_){var tt=$[_];for(H=0;H<tt.length;++H)F(n,v,X[rt=31&tt[H]]),v+=N[rt],rt>15&&(F(n,v,tt[H]>>5&127),v+=tt[H]>>12)}}else Y=w,J=m,K=z,Q=b;for(H=0;H<l;++H){var nt=a[H];if(nt>255){var rt;E(n,v,Y[257+(rt=nt>>18&31)]),v+=J[rt+257],rt>7&&(F(n,v,nt>>23&31),v+=i[rt]);var et=31&nt;E(n,v,K[et]),v+=Q[et],et>3&&(E(n,v,nt>>5&8191),v+=o[et])}else E(n,v,Y[nt]),v+=J[nt]}return E(n,v,Y[256]),v+J[256]},j=new e([65540,131080,131088,131104,262176,1048704,1048832,2114560,2117632]),N=new n(0),P=function(t,s,a,u,h,l){var c=l.z||t.length,v=new n(u+c+5*(1+Math.ceil(c/7e3))+h),d=v.subarray(u,v.length-h),g=l.l,y=7&(l.r||0);if(s){y&&(d[0]=l.r>>3);for(var m=j[s-1],b=m>>13,w=8191&m,x=(1<<a)-1,z=l.p||new r(32768),k=l.h||new r(x+1),M=Math.ceil(a/3),S=2*M,A=function(n){return(t[n]^t[n+1]<<M^t[n+2]<<S)&x},C=new e(25e3),I=new r(288),U=new r(32),F=0,E=0,Z=l.i||0,q=0,O=l.w||0,G=0;Z+2<c;++Z){var N=A(Z),P=32767&Z,B=k[N];if(z[P]=B,k[N]=P,O<=Z){var Y=c-Z;if((F>7e3||q>24576)&&(Y>423||!g)){y=H(t,d,0,C,I,U,E,q,G,Z-G,y),q=F=E=0,G=Z;for(var J=0;J<286;++J)I[J]=0;for(J=0;J<30;++J)U[J]=0}var K=2,Q=0,R=w,V=P-B&32767;if(Y>2&&N==A(Z-V))for(var W=Math.min(b,Y)-1,X=Math.min(32767,Z),$=Math.min(258,Y);V<=X&&--R&&P!=B;){if(t[Z+K]==t[Z+K-V]){for(var _=0;_<$&&t[Z+_]==t[Z+_-V];++_);if(_>K){if(K=_,Q=V,_>W)break;var tt=Math.min(V,_-2),nt=0;for(J=0;J<tt;++J){var rt=Z-V+J&32767,et=rt-z[rt]&32767;et>nt&&(nt=et,B=rt)}}}V+=(P=B)-(B=z[P])&32767}if(Q){C[q++]=268435456|f[K]<<18|p[Q];var it=31&f[K],ot=31&p[Q];E+=i[it]+o[ot],++I[257+it],++U[ot],O=Z+K,++F}else C[q++]=t[Z],++I[t[Z]]}}for(Z=Math.max(Z,O);Z<c;++Z)C[q++]=t[Z],++I[t[Z]];y=H(t,d,g,C,I,U,E,q,G,Z-G,y),g||(l.r=7&y|d[y/8|0]<<3,y-=7,l.h=k,l.p=z,l.i=Z,l.w=O)}else{for(Z=l.w||0;Z<c+g;Z+=65535){var st=Z+65535;st>=c&&(d[y/8|0]=g,st=c),y=L(d,y+1,t.subarray(Z,st))}l.i=c}return D(v,0,u+T(y)+h)},B=function(){for(var t=new Int32Array(256),n=0;n<256;++n){for(var r=n,e=9;--e;)r=(1&r&&-306674912)^r>>>1;t[n]=r}return t}(),Y=function(){var t=-1;return{p:function(n){for(var r=t,e=0;e<n.length;++e)r=B[255&r^n[e]]^r>>>8;t=r},d:function(){return~t}}},J=function(){var t=1,n=0;return{p:function(r){for(var e=t,i=n,o=0|r.length,s=0;s!=o;){for(var a=Math.min(s+2655,o);s<a;++s)i+=e+=r[s];e=(65535&e)+15*(e>>16),i=(65535&i)+15*(i>>16)}t=e,n=i},d:function(){return(255&(t%=65521))<<24|(65280&t)<<8|(255&(n%=65521))<<8|n>>8}}},K=function(t,r,e,i,o){if(!o&&(o={l:1},r.dictionary)){var s=r.dictionary.subarray(-32768),a=new n(s.length+t.length);a.set(s),a.set(t,s.length),t=a,o.w=s.length}return P(t,null==r.level?6:r.level,null==r.mem?o.l?Math.ceil(1.5*Math.max(8,Math.min(13,Math.log(t.length)))):20:12+r.mem,e,i,o)},Q=function(t,n){var r={};for(var e in t)r[e]=t[e];for(var e in n)r[e]=n[e];return r},R=function(t,n,r){for(var e=t(),i=""+t,o=i.slice(i.indexOf("[")+1,i.lastIndexOf("]")).replace(/\s+/g,"").split(","),s=0;s<e.length;++s){var a=e[s],u=o[s];if("function"==typeof a){n+=";"+u+"=";var h=""+a;if(a.prototype)if(-1!=h.indexOf("[native code]")){var f=h.indexOf(" ",8)+1;n+=h.slice(f,h.indexOf("(",f))}else for(var l in n+=h,a.prototype)n+=";"+u+".prototype."+l+"="+a.prototype[l];else n+=h}else r[u]=a}return n},V=[],W=function(t){var n=[];for(var r in t)t[r].buffer&&n.push((t[r]=new t[r].constructor(t[r])).buffer);return n},X=function(n,r,e,i){if(!V[e]){for(var o="",s={},a=n.length-1,u=0;u<a;++u)o=R(n[u],o,s);V[e]={c:R(n[a],o,s),e:s}}var h=Q({},V[e].e);return(0,t.default)(V[e].c+";onmessage=function(e){for(var k in e.data)self[k]=e.data[k];onmessage="+r+"}",e,h,W(h),i)},$=function(){return[n,r,e,i,o,s,h,c,x,k,v,C,y,M,S,A,T,D,I,U,Tt,it,ot]},_=function(){return[n,r,e,i,o,s,f,p,w,m,z,b,v,j,N,y,F,E,Z,q,O,G,L,H,T,D,P,K,kt,it]},tt=function(){return[pt,gt,ct,Y,B]},nt=function(){return[vt,dt]},rt=function(){return[yt,ct,J]},et=function(){return[mt]},it=function(t){return postMessage(t,[t.buffer])},ot=function(t){return t&&{out:t.size&&new n(t.size),dictionary:t.dictionary}},st=function(t,n,r,e,i,o){var s=X(r,e,i,(function(t,n){s.terminate(),o(t,n)}));return s.postMessage([t,n],n.consume?[t.buffer]:[]),function(){s.terminate()}},at=function(t){return t.ondata=function(t,n){return postMessage([t,n],[t.buffer])},function(n){n.data.length?(t.push(n.data[0],n.data[1]),postMessage([n.data[0].length])):t.flush()}},ut=function(t,n,r,e,i,o,s){var a,u=X(t,e,i,(function(t,r){t?(u.terminate(),n.ondata.call(n,t)):Array.isArray(r)?1==r.length?(n.queuedSize-=r[0],n.ondrain&&n.ondrain(r[0])):(r[1]&&u.terminate(),n.ondata.call(n,t,r[0],r[1])):s(r)}));u.postMessage(r),n.queuedSize=0,n.push=function(t,r){n.ondata||I(5),a&&n.ondata(I(4,0,1),null,!!r),n.queuedSize+=t.length,u.postMessage([t,a=r],[t.buffer])},n.terminate=function(){u.terminate()},o&&(n.flush=function(){u.postMessage([])})},ht=function(t,n){return t[n]|t[n+1]<<8},ft=function(t,n){return(t[n]|t[n+1]<<8|t[n+2]<<16|t[n+3]<<24)>>>0},lt=function(t,n){return ft(t,n)+4294967296*ft(t,n+4)},ct=function(t,n,r){for(;r;++n)t[n]=r,r>>>=8},pt=function(t,n){var r=n.filename;if(t[0]=31,t[1]=139,t[2]=8,t[8]=n.level<2?4:9==n.level?2:0,t[9]=3,0!=n.mtime&&ct(t,4,Math.floor(new Date(n.mtime||Date.now())/1e3)),r){t[3]=8;for(var e=0;e<=r.length;++e)t[e+10]=r.charCodeAt(e)}},vt=function(t){31==t[0]&&139==t[1]&&8==t[2]||I(6,"invalid gzip data");var n=t[3],r=10;4&n&&(r+=2+(t[10]|t[11]<<8));for(var e=(n>>3&1)+(n>>4&1);e>0;e-=!t[r++]);return r+(2&n)},dt=function(t){var n=t.length;return(t[n-4]|t[n-3]<<8|t[n-2]<<16|t[n-1]<<24)>>>0},gt=function(t){return 10+(t.filename?t.filename.length+1:0)},yt=function(t,n){var r=n.level,e=0==r?0:r<6?1:9==r?3:2;if(t[0]=120,t[1]=e<<6|(n.dictionary&&32),t[1]|=31-(t[0]<<8|t[1])%31,n.dictionary){var i=J();i.p(n.dictionary),ct(t,2,i.d())}},mt=function(t,n){return(8!=(15&t[0])||t[0]>>4>7||(t[0]<<8|t[1])%31)&&I(6,"invalid zlib data"),(t[1]>>5&1)==+!n&&I(6,"invalid zlib data: "+(32&t[1]?"need":"unexpected")+" dictionary"),2+(t[1]>>3&4)};function bt(t,n){return"function"==typeof t&&(n=t,t={}),this.ondata=n,t}var wt=function(){function t(t,r){if("function"==typeof t&&(r=t,t={}),this.ondata=r,this.o=t||{},this.s={l:0,i:32768,w:32768,z:32768},this.b=new n(98304),this.o.dictionary){var e=this.o.dictionary.subarray(-32768);this.b.set(e,32768-e.length),this.s.i=32768-e.length}}return t.prototype.p=function(t,n){this.ondata(K(t,this.o,0,0,this.s),n)},t.prototype.push=function(t,r){this.ondata||I(5),this.s.l&&I(4);var e=t.length+this.s.z;if(e>this.b.length){if(e>2*this.b.length-32768){var i=new n(-32768&e);i.set(this.b.subarray(0,this.s.z)),this.b=i}var o=this.b.length-this.s.z;this.b.set(t.subarray(0,o),this.s.z),this.s.z=this.b.length,this.p(this.b,!1),this.b.set(this.b.subarray(-32768)),this.b.set(t.subarray(o),32768),this.s.z=t.length-o+32768,this.s.i=32766,this.s.w=32768}else this.b.set(t,this.s.z),this.s.z+=t.length;this.s.l=1&r,(this.s.z>this.s.w+8191||r)&&(this.p(this.b,r||!1),this.s.w=this.s.i,this.s.i-=2)},t.prototype.flush=function(){this.ondata||I(5),this.s.l&&I(4),this.p(this.b,!1),this.s.w=this.s.i,this.s.i-=2},t}();_e.Deflate=wt;var xt=function(){return function(t,n){ut([_,function(){return[at,wt]}],this,bt.call(this,t,n),(function(t){var n=new wt(t.data);onmessage=at(n)}),6,1)}}();function zt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[_],(function(t){return it(kt(t.data[0],t.data[1]))}),0,r)}function kt(t,n){return K(t,n||{},0,0)}_e.AsyncDeflate=xt,_e.deflate=zt,_e.deflateSync=kt;var Mt=function(){function t(t,r){"function"==typeof t&&(r=t,t={}),this.ondata=r;var e=t&&t.dictionary&&t.dictionary.subarray(-32768);this.s={i:0,b:e?e.length:0},this.o=new n(32768),this.p=new n(0),e&&this.o.set(e)}return t.prototype.e=function(t){if(this.ondata||I(5),this.d&&I(4),this.p.length){if(t.length){var r=new n(this.p.length+t.length);r.set(this.p),r.set(t,this.p.length),this.p=r}}else this.p=t},t.prototype.c=function(t){this.s.i=+(this.d=t||!1);var n=this.s.b,r=U(this.p,this.s,this.o);this.ondata(D(r,n,this.s.b),this.d),this.o=D(r,this.s.b-32768),this.s.b=this.o.length,this.p=D(this.p,this.s.p/8|0),this.s.p&=7},t.prototype.push=function(t,n){this.e(t),this.c(n)},t}();_e.Inflate=Mt;var St=function(){return function(t,n){ut([$,function(){return[at,Mt]}],this,bt.call(this,t,n),(function(t){var n=new Mt(t.data);onmessage=at(n)}),7,0)}}();function At(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[$],(function(t){return it(Tt(t.data[0],ot(t.data[1])))}),1,r)}function Tt(t,n){return U(t,{i:2},n&&n.out,n&&n.dictionary)}_e.AsyncInflate=St,_e.inflate=At,_e.inflateSync=Tt;var Dt=function(){function t(t,n){this.c=Y(),this.l=0,this.v=1,wt.call(this,t,n)}return t.prototype.push=function(t,n){this.c.p(t),this.l+=t.length,wt.prototype.push.call(this,t,n)},t.prototype.p=function(t,n){var r=K(t,this.o,this.v&&gt(this.o),n&&8,this.s);this.v&&(pt(r,this.o),this.v=0),n&&(ct(r,r.length-8,this.c.d()),ct(r,r.length-4,this.l)),this.ondata(r,n)},t.prototype.flush=function(){wt.prototype.flush.call(this)},t}();_e.Gzip=Dt,_e.Compress=Dt;var Ct=function(){return function(t,n){ut([_,tt,function(){return[at,wt,Dt]}],this,bt.call(this,t,n),(function(t){var n=new Dt(t.data);onmessage=at(n)}),8,1)}}();function It(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[_,tt,function(){return[Ut]}],(function(t){return it(Ut(t.data[0],t.data[1]))}),2,r)}function Ut(t,n){n||(n={});var r=Y(),e=t.length;r.p(t);var i=K(t,n,gt(n),8),o=i.length;return pt(i,n),ct(i,o-8,r.d()),ct(i,o-4,e),i}_e.AsyncGzip=Ct,_e.AsyncCompress=Ct,_e.gzip=It,_e.compress=It,_e.gzipSync=Ut,_e.compressSync=Ut;var Ft=function(){function t(t,n){this.v=1,this.r=0,Mt.call(this,t,n)}return t.prototype.push=function(t,r){if(Mt.prototype.e.call(this,t),this.r+=t.length,this.v){var e=this.p.subarray(this.v-1),i=e.length>3?vt(e):4;if(i>e.length){if(!r)return}else this.v>1&&this.onmember&&this.onmember(this.r-e.length);this.p=e.subarray(i),this.v=0}Mt.prototype.c.call(this,r),!this.s.f||this.s.l||r||(this.v=T(this.s.p)+9,this.s={i:0},this.o=new n(0),this.push(new n(0),r))},t}();_e.Gunzip=Ft;var Et=function(){return function(t,n){var r=this;ut([$,nt,function(){return[at,Mt,Ft]}],this,bt.call(this,t,n),(function(t){var n=new Ft(t.data);n.onmember=function(t){return postMessage(t)},onmessage=at(n)}),9,0,(function(t){return r.onmember&&r.onmember(t)}))}}();function Zt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[$,nt,function(){return[qt]}],(function(t){return it(qt(t.data[0],t.data[1]))}),3,r)}function qt(t,r){var e=vt(t);return e+8>t.length&&I(6,"invalid gzip data"),U(t.subarray(e,-8),{i:2},r&&r.out||new n(dt(t)),r&&r.dictionary)}_e.AsyncGunzip=Et,_e.gunzip=Zt,_e.gunzipSync=qt;var Ot=function(){function t(t,n){this.c=J(),this.v=1,wt.call(this,t,n)}return t.prototype.push=function(t,n){this.c.p(t),wt.prototype.push.call(this,t,n)},t.prototype.p=function(t,n){var r=K(t,this.o,this.v&&(this.o.dictionary?6:2),n&&4,this.s);this.v&&(yt(r,this.o),this.v=0),n&&ct(r,r.length-4,this.c.d()),this.ondata(r,n)},t.prototype.flush=function(){wt.prototype.flush.call(this)},t}();_e.Zlib=Ot;var Gt=function(){return function(t,n){ut([_,rt,function(){return[at,wt,Ot]}],this,bt.call(this,t,n),(function(t){var n=new Ot(t.data);onmessage=at(n)}),10,1)}}();function Lt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[_,rt,function(){return[Ht]}],(function(t){return it(Ht(t.data[0],t.data[1]))}),4,r)}function Ht(t,n){n||(n={});var r=J();r.p(t);var e=K(t,n,n.dictionary?6:2,4);return yt(e,n),ct(e,e.length-4,r.d()),e}_e.AsyncZlib=Gt,_e.zlib=Lt,_e.zlibSync=Ht;var jt=function(){function t(t,n){Mt.call(this,t,n),this.v=t&&t.dictionary?2:1}return t.prototype.push=function(t,n){if(Mt.prototype.e.call(this,t),this.v){if(this.p.length<6&&!n)return;this.p=this.p.subarray(mt(this.p,this.v-1)),this.v=0}n&&(this.p.length<4&&I(6,"invalid zlib data"),this.p=this.p.subarray(0,-4)),Mt.prototype.c.call(this,n)},t}();_e.Unzlib=jt;var Nt=function(){return function(t,n){ut([$,et,function(){return[at,Mt,jt]}],this,bt.call(this,t,n),(function(t){var n=new jt(t.data);onmessage=at(n)}),11,0)}}();function Pt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[$,et,function(){return[Bt]}],(function(t){return it(Bt(t.data[0],ot(t.data[1])))}),5,r)}function Bt(t,n){return U(t.subarray(mt(t,n&&n.dictionary),-4),{i:2},n&&n.out,n&&n.dictionary)}_e.AsyncUnzlib=Nt,_e.unzlib=Pt,_e.unzlibSync=Bt;var Yt=function(){function t(t,n){this.o=bt.call(this,t,n)||{},this.G=Ft,this.I=Mt,this.Z=jt}return t.prototype.i=function(){var t=this;this.s.ondata=function(n,r){t.ondata(n,r)}},t.prototype.push=function(t,r){if(this.ondata||I(5),this.s)this.s.push(t,r);else{if(this.p&&this.p.length){var e=new n(this.p.length+t.length);e.set(this.p),e.set(t,this.p.length)}else this.p=t;this.p.length>2&&(this.s=31==this.p[0]&&139==this.p[1]&&8==this.p[2]?new this.G(this.o):8!=(15&this.p[0])||this.p[0]>>4>7||(this.p[0]<<8|this.p[1])%31?new this.I(this.o):new this.Z(this.o),this.i(),this.s.push(this.p,r),this.p=null)}},t}();_e.Decompress=Yt;var Jt=function(){function t(t,n){Yt.call(this,t,n),this.queuedSize=0,this.G=Et,this.I=St,this.Z=Nt}return t.prototype.i=function(){var t=this;this.s.ondata=function(n,r,e){t.ondata(n,r,e)},this.s.ondrain=function(n){t.queuedSize-=n,t.ondrain&&t.ondrain(n)}},t.prototype.push=function(t,n){this.queuedSize+=t.length,Yt.prototype.push.call(this,t,n)},t}();function Kt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),31==t[0]&&139==t[1]&&8==t[2]?Zt(t,n,r):8!=(15&t[0])||t[0]>>4>7||(t[0]<<8|t[1])%31?At(t,n,r):Pt(t,n,r)}function Qt(t,n){return 31==t[0]&&139==t[1]&&8==t[2]?qt(t,n):8!=(15&t[0])||t[0]>>4>7||(t[0]<<8|t[1])%31?Tt(t,n):Bt(t,n)}_e.AsyncDecompress=Jt,_e.decompress=Kt,_e.decompressSync=Qt;var Rt=function(t,r,e,i){for(var o in t){var s=t[o],a=r+o,u=i;Array.isArray(s)&&(u=Q(i,s[1]),s=s[0]),s instanceof n?e[a]=[s,u]:(e[a+="/"]=[new n(0),u],Rt(s,a,e,i))}},Vt="undefined"!=typeof TextEncoder&&new TextEncoder,Wt="undefined"!=typeof TextDecoder&&new TextDecoder,Xt=0;try{Wt.decode(N,{stream:!0}),Xt=1}catch(t){}var $t=function(t){for(var n="",r=0;;){var e=t[r++],i=(e>127)+(e>223)+(e>239);if(r+i>t.length)return{s:n,r:D(t,r-1)};i?3==i?(e=((15&e)<<18|(63&t[r++])<<12|(63&t[r++])<<6|63&t[r++])-65536,n+=String.fromCharCode(55296|e>>10,56320|1023&e)):n+=String.fromCharCode(1&i?(31&e)<<6|63&t[r++]:(15&e)<<12|(63&t[r++])<<6|63&t[r++]):n+=String.fromCharCode(e)}},_t=function(){function t(t){this.ondata=t,Xt?this.t=new TextDecoder:this.p=N}return t.prototype.push=function(t,r){if(this.ondata||I(5),r=!!r,this.t)return this.ondata(this.t.decode(t,{stream:!0}),r),void(r&&(this.t.decode().length&&I(8),this.t=null));this.p||I(4);var e=new n(this.p.length+t.length);e.set(this.p),e.set(t,this.p.length);var i=$t(e),o=i.s,s=i.r;r?(s.length&&I(8),this.p=null):this.p=s,this.ondata(o,r)},t}();_e.DecodeUTF8=_t;var tn=function(){function t(t){this.ondata=t}return t.prototype.push=function(t,n){this.ondata||I(5),this.d&&I(4),this.ondata(nn(t),this.d=n||!1)},t}();function nn(t,r){if(r){for(var e=new n(t.length),i=0;i<t.length;++i)e[i]=t.charCodeAt(i);return e}if(Vt)return Vt.encode(t);var o=t.length,s=new n(t.length+(t.length>>1)),a=0,u=function(t){s[a++]=t};for(i=0;i<o;++i){if(a+5>s.length){var h=new n(a+8+(o-i<<1));h.set(s),s=h}var f=t.charCodeAt(i);f<128||r?u(f):f<2048?(u(192|f>>6),u(128|63&f)):f>55295&&f<57344?(u(240|(f=65536+(1047552&f)|1023&t.charCodeAt(++i))>>18),u(128|f>>12&63),u(128|f>>6&63),u(128|63&f)):(u(224|f>>12),u(128|f>>6&63),u(128|63&f))}return D(s,0,a)}function rn(t,n){if(n){for(var r="",e=0;e<t.length;e+=16384)r+=String.fromCharCode.apply(null,t.subarray(e,e+16384));return r}if(Wt)return Wt.decode(t);var i=$t(t),o=i.s;return(r=i.r).length&&I(8),o}_e.EncodeUTF8=tn,_e.strToU8=nn,_e.strFromU8=rn;var en=function(t){return 1==t?3:t<6?2:9==t?1:0},on=function(t,n){return n+30+ht(t,n+26)+ht(t,n+28)},sn=function(t,n,r){var e=ht(t,n+28),i=rn(t.subarray(n+46,n+46+e),!(2048&ht(t,n+8))),o=n+46+e,s=ft(t,n+20),a=r&&4294967295==s?an(t,o):[s,ft(t,n+24),ft(t,n+42)],u=a[0],h=a[1],f=a[2];return[ht(t,n+10),u,h,i,o+ht(t,n+30)+ht(t,n+32),f]},an=function(t,n){for(;1!=ht(t,n);n+=4+ht(t,n+2));return[lt(t,n+12),lt(t,n+4),lt(t,n+20)]},un=function(t){var n=0;if(t)for(var r in t){var e=t[r].length;e>65535&&I(9),n+=e+4}return n},hn=function(t,n,r,e,i,o,s,a){var u=e.length,h=r.extra,f=a&&a.length,l=un(h);ct(t,n,null!=s?33639248:67324752),n+=4,null!=s&&(t[n++]=20,t[n++]=r.os),t[n]=20,n+=2,t[n++]=r.flag<<1|(o<0&&8),t[n++]=i&&8,t[n++]=255&r.compression,t[n++]=r.compression>>8;var c=new Date(null==r.mtime?Date.now():r.mtime),p=c.getFullYear()-1980;if((p<0||p>119)&&I(10),ct(t,n,p<<25|c.getMonth()+1<<21|c.getDate()<<16|c.getHours()<<11|c.getMinutes()<<5|c.getSeconds()>>1),n+=4,-1!=o&&(ct(t,n,r.crc),ct(t,n+4,o<0?-o-2:o),ct(t,n+8,r.size)),ct(t,n+12,u),ct(t,n+14,l),n+=16,null!=s&&(ct(t,n,f),ct(t,n+6,r.attrs),ct(t,n+10,s),n+=14),t.set(e,n),n+=u,l)for(var v in h){var d=h[v],g=d.length;ct(t,n,+v),ct(t,n+2,g),t.set(d,n+4),n+=4+g}return f&&(t.set(a,n),n+=f),n},fn=function(t,n,r,e,i){ct(t,n,101010256),ct(t,n+8,r),ct(t,n+10,r),ct(t,n+12,e),ct(t,n+16,i)},ln=function(){function t(t){this.filename=t,this.c=Y(),this.size=0,this.compression=0}return t.prototype.process=function(t,n){this.ondata(null,t,n)},t.prototype.push=function(t,n){this.ondata||I(5),this.c.p(t),this.size+=t.length,n&&(this.crc=this.c.d()),this.process(t,n||!1)},t}();_e.ZipPassThrough=ln;var cn=function(){function t(t,n){var r=this;n||(n={}),ln.call(this,t),this.d=new wt(n,(function(t,n){r.ondata(null,t,n)})),this.compression=8,this.flag=en(n.level)}return t.prototype.process=function(t,n){try{this.d.push(t,n)}catch(t){this.ondata(t,null,n)}},t.prototype.push=function(t,n){ln.prototype.push.call(this,t,n)},t}();_e.ZipDeflate=cn;var pn=function(){function t(t,n){var r=this;n||(n={}),ln.call(this,t),this.d=new xt(n,(function(t,n,e){r.ondata(t,n,e)})),this.compression=8,this.flag=en(n.level),this.terminate=this.d.terminate}return t.prototype.process=function(t,n){this.d.push(t,n)},t.prototype.push=function(t,n){ln.prototype.push.call(this,t,n)},t}();_e.AsyncZipDeflate=pn;var vn=function(){function t(t){this.ondata=t,this.u=[],this.d=1}return t.prototype.add=function(t){var r=this;if(this.ondata||I(5),2&this.d)this.ondata(I(4+8*(1&this.d),0,1),null,!1);else{var e=nn(t.filename),i=e.length,o=t.comment,s=o&&nn(o),a=i!=t.filename.length||s&&o.length!=s.length,u=i+un(t.extra)+30;i>65535&&this.ondata(I(11,0,1),null,!1);var h=new n(u);hn(h,0,t,e,a,-1);var f=[h],l=function(){for(var t=0,n=f;t<n.length;t++)r.ondata(null,n[t],!1);f=[]},c=this.d;this.d=0;var p=this.u.length,v=Q(t,{f:e,u:a,o:s,t:function(){t.terminate&&t.terminate()},r:function(){if(l(),c){var t=r.u[p+1];t?t.r():r.d=1}c=1}}),d=0;t.ondata=function(e,i,o){if(e)r.ondata(e,i,o),r.terminate();else if(d+=i.length,f.push(i),o){var s=new n(16);ct(s,0,134695760),ct(s,4,t.crc),ct(s,8,d),ct(s,12,t.size),f.push(s),v.c=d,v.b=u+d+16,v.crc=t.crc,v.size=t.size,c&&v.r(),c=1}else c&&l()},this.u.push(v)}},t.prototype.end=function(){var t=this;2&this.d?this.ondata(I(4+8*(1&this.d),0,1),null,!0):(this.d?this.e():this.u.push({r:function(){1&t.d&&(t.u.splice(-1,1),t.e())},t:function(){}}),this.d=3)},t.prototype.e=function(){for(var t=0,r=0,e=0,i=0,o=this.u;i<o.length;i++)e+=46+(h=o[i]).f.length+un(h.extra)+(h.o?h.o.length:0);for(var s=new n(e+22),a=0,u=this.u;a<u.length;a++){var h;hn(s,t,h=u[a],h.f,h.u,-h.c-2,r,h.o),t+=46+h.f.length+un(h.extra)+(h.o?h.o.length:0),r+=h.b}fn(s,t,this.u.length,e,r),this.ondata(null,s,!0),this.d=2},t.prototype.terminate=function(){for(var t=0,n=this.u;t<n.length;t++)n[t].t();this.d=2},t}();function dn(t,r,e){e||(e=r,r={}),"function"!=typeof e&&I(7);var i={};Rt(t,"",i,r);var o=Object.keys(i),s=o.length,a=0,u=0,h=s,f=Array(s),l=[],c=function(){for(var t=0;t<l.length;++t)l[t]()},p=function(t,n){xn((function(){e(t,n)}))};xn((function(){p=e}));var v=function(){var t=new n(u+22),r=a,e=u-a;u=0;for(var i=0;i<h;++i){var o=f[i];try{var s=o.c.length;hn(t,u,o,o.f,o.u,s);var l=30+o.f.length+un(o.extra),c=u+l;t.set(o.c,c),hn(t,a,o,o.f,o.u,s,u,o.m),a+=16+l+(o.m?o.m.length:0),u=c+s}catch(t){return p(t,null)}}fn(t,a,f.length,e,r),p(null,t)};s||v();for(var d=function(t){var n=o[t],r=i[n],e=r[0],h=r[1],d=Y(),g=e.length;d.p(e);var y=nn(n),m=y.length,b=h.comment,w=b&&nn(b),x=w&&w.length,z=un(h.extra),k=0==h.level?0:8,M=function(r,e){if(r)c(),p(r,null);else{var i=e.length;f[t]=Q(h,{size:g,crc:d.d(),c:e,f:y,m:w,u:m!=n.length||w&&b.length!=x,compression:k}),a+=30+m+z+i,u+=76+2*(m+z)+(x||0)+i,--s||v()}};if(m>65535&&M(I(11,0,1),null),k)if(g<16e4)try{M(null,kt(e,h))}catch(t){M(t,null)}else l.push(zt(e,h,M));else M(null,e)},g=0;g<h;++g)d(g);return c}function gn(t,r){r||(r={});var e={},i=[];Rt(t,"",e,r);var o=0,s=0;for(var a in e){var u=e[a],h=u[0],f=u[1],l=0==f.level?0:8,c=(M=nn(a)).length,p=f.comment,v=p&&nn(p),d=v&&v.length,g=un(f.extra);c>65535&&I(11);var y=l?kt(h,f):h,m=y.length,b=Y();b.p(h),i.push(Q(f,{size:h.length,crc:b.d(),c:y,f:M,m:v,u:c!=a.length||v&&p.length!=d,o:o,compression:l})),o+=30+c+g+m,s+=76+2*(c+g)+(d||0)+m}for(var w=new n(s+22),x=o,z=s-o,k=0;k<i.length;++k){var M;hn(w,(M=i[k]).o,M,M.f,M.u,M.c.length);var S=30+M.f.length+un(M.extra);w.set(M.c,M.o+S),hn(w,o,M,M.f,M.u,M.c.length,M.o,M.m),o+=16+S+(M.m?M.m.length:0)}return fn(w,o,i.length,z,x),w}_e.Zip=vn,_e.zip=dn,_e.zipSync=gn;var yn=function(){function t(){}return t.prototype.push=function(t,n){this.ondata(null,t,n)},t.compression=0,t}();_e.UnzipPassThrough=yn;var mn=function(){function t(){var t=this;this.i=new Mt((function(n,r){t.ondata(null,n,r)}))}return t.prototype.push=function(t,n){try{this.i.push(t,n)}catch(t){this.ondata(t,null,n)}},t.compression=8,t}();_e.UnzipInflate=mn;var bn=function(){function t(t,n){var r=this;n<32e4?this.i=new Mt((function(t,n){r.ondata(null,t,n)})):(this.i=new St((function(t,n,e){r.ondata(t,n,e)})),this.terminate=this.i.terminate)}return t.prototype.push=function(t,n){this.i.terminate&&(t=D(t,0)),this.i.push(t,n)},t.compression=8,t}();_e.AsyncUnzipInflate=bn;var wn=function(){function t(t){this.onfile=t,this.k=[],this.o={0:yn},this.p=N}return t.prototype.push=function(t,r){var e=this;if(this.onfile||I(5),this.p||I(4),this.c>0){var i=Math.min(this.c,t.length),o=t.subarray(0,i);if(this.c-=i,this.d?this.d.push(o,!this.c):this.k[0].push(o),(t=t.subarray(i)).length)return this.push(t,r)}else{var s=0,a=0,u=void 0,h=void 0;this.p.length?t.length?((h=new n(this.p.length+t.length)).set(this.p),h.set(t,this.p.length)):h=this.p:h=t;for(var f=h.length,l=this.c,c=l&&this.d,p=function(){var t,n=ft(h,a);if(67324752==n){s=1,u=a,v.d=null,v.c=0;var r=ht(h,a+6),i=ht(h,a+8),o=2048&r,c=8&r,p=ht(h,a+26),d=ht(h,a+28);if(f>a+30+p+d){var g=[];v.k.unshift(g),s=2;var y,m=ft(h,a+18),b=ft(h,a+22),w=rn(h.subarray(a+30,a+=30+p),!o);4294967295==m?(t=c?[-2]:an(h,a),m=t[0],b=t[1]):c&&(m=-1),a+=d,v.c=m;var x={name:w,compression:i,start:function(){if(x.ondata||I(5),m){var t=e.o[i];t||x.ondata(I(14,"unknown compression type "+i,1),null,!1),(y=m<0?new t(w):new t(w,m,b)).ondata=function(t,n,r){x.ondata(t,n,r)};for(var n=0,r=g;n<r.length;n++)y.push(r[n],!1);e.k[0]==g&&e.c?e.d=y:y.push(N,!0)}else x.ondata(null,N,!0)},terminate:function(){y&&y.terminate&&y.terminate()}};m>=0&&(x.size=m,x.originalSize=b),v.onfile(x)}return"break"}if(l){if(134695760==n)return u=a+=12+(-2==l&&8),s=3,v.c=0,"break";if(33639248==n)return u=a-=4,s=3,v.c=0,"break"}},v=this;a<f-4&&"break"!==p();++a);if(this.p=N,l<0){var d=h.subarray(0,s?u-12-(-2==l&&8)-(134695760==ft(h,u-16)&&4):a);c?c.push(d,!!s):this.k[+(2==s)].push(d)}if(2&s)return this.push(h.subarray(a),r);this.p=h.subarray(a)}r&&(this.c&&I(13),this.p=null)},t.prototype.register=function(t){this.o[t.compression]=t},t}();_e.Unzip=wn;var xn="function"==typeof queueMicrotask?queueMicrotask:"function"==typeof setTimeout?setTimeout:function(t){t()};function zn(t,r,e){e||(e=r,r={}),"function"!=typeof e&&I(7);var i=[],o=function(){for(var t=0;t<i.length;++t)i[t]()},s={},a=function(t,n){xn((function(){e(t,n)}))};xn((function(){a=e}));for(var u=t.length-22;101010256!=ft(t,u);--u)if(!u||t.length-u>65558)return a(I(13,0,1),null),o;var h=ht(t,u+8);if(h){var f=h,l=ft(t,u+16),c=4294967295==l||65535==f;if(c){var p=ft(t,u-12);(c=101075792==ft(t,p))&&(f=h=ft(t,p+32),l=ft(t,p+48))}for(var v=r&&r.filter,d=function(r){var e=sn(t,l,c),u=e[0],f=e[1],p=e[2],d=e[3],g=e[4],y=on(t,e[5]);l=g;var m=function(t,n){t?(o(),a(t,null)):(n&&(s[d]=n),--h||a(null,s))};if(!v||v({name:d,size:f,originalSize:p,compression:u}))if(u)if(8==u){var b=t.subarray(y,y+f);if(p<524288||f>.8*p)try{m(null,Tt(b,{out:new n(p)}))}catch(t){m(t,null)}else i.push(At(b,{size:p},m))}else m(I(14,"unknown compression type "+u,1),null);else m(null,D(t,y,y+f));else m(null,null)},g=0;g<f;++g)d()}else a(null,{});return o}function kn(t,r){for(var e={},i=t.length-22;101010256!=ft(t,i);--i)(!i||t.length-i>65558)&&I(13);var o=ht(t,i+8);if(!o)return{};var s=ft(t,i+16),a=4294967295==s||65535==o;if(a){var u=ft(t,i-12);(a=101075792==ft(t,u))&&(o=ft(t,u+32),s=ft(t,u+48))}for(var h=r&&r.filter,f=0;f<o;++f){var l=sn(t,s,a),c=l[0],p=l[1],v=l[2],d=l[3],g=l[4],y=on(t,l[5]);s=g,h&&!h({name:d,size:p,originalSize:v,compression:c})||(c?8==c?e[d]=Tt(t.subarray(y,y+p),{out:new n(v)}):I(14,"unknown compression type "+c):e[d]=D(t,y,y+p))}return e}_e.unzip=zn,_e.unzipSync=kn;return _e});
+
+    function gedcomDate(d) {
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function noteLines(text, level) {
+  if (!text) return [];
+  const [first, ...rest] = text.split('\n');
+  const out = [`${level} NOTE ${first}`];
+  for (const line of rest) out.push(`${level + 1} CONT ${line}`);
+  return out;
+}
+
+function mediaPointer(personPointer) {
+  return personPointer.replace(/^@I/, '@M');
+}
+
+function imageExtension(dataUri) {
+  const m = dataUri.match(/^data:image\/(\w+);base64,/);
+  if (!m) return 'jpg';
+  return m[1] === 'jpeg' ? 'jpg' : m[1];
+}
+
+function exportToGedcom(people, families, { includeMediaRefs = false } = {}) {
+  const lines = [];
+  lines.push('0 HEAD');
+  lines.push('1 GEDC');
+  lines.push('2 VERS 5.5.1');
+  lines.push('2 FORM LINEAGE-LINKED');
+  lines.push('1 CHAR UTF-8');
+  lines.push('1 SOUR FamilyTreeApp');
+  lines.push(`1 DATE ${gedcomDate(new Date())}`);
+
+  const sexMap = { M: 'M', F: 'F', other: 'U' };
+
+  for (const p of people) {
+    lines.push(`0 ${p.pointer} INDI`);
+    if (p.fullname) {
+      lines.push(`1 NAME ${p.fullname}`);
+      if (p.givenname) lines.push(`2 GIVN ${p.givenname}`);
+      if (p.surname)   lines.push(`2 SURN ${p.surname}`);
+    }
+    if (sexMap[p.sex]) lines.push(`1 SEX ${sexMap[p.sex]}`);
+    if (p.date_of_birth || p.place_of_birth) {
+      lines.push('1 BIRT');
+      if (p.date_of_birth)  lines.push(`2 DATE ${p.date_of_birth}`);
+      if (p.place_of_birth) lines.push(`2 PLAC ${p.place_of_birth}`);
+    }
+    // is_death is stored as "Y" (truthy string); a death date also implies death
+    if (p.date_of_death || p.place_of_death || p.is_death) {
+      lines.push('1 DEAT Y');
+      if (p.date_of_death)  lines.push(`2 DATE ${p.date_of_death}`);
+      if (p.place_of_death) lines.push(`2 PLAC ${p.place_of_death}`);
+    }
+    if (p.notes) lines.push(...noteLines(p.notes, 1));
+    if (includeMediaRefs && p._hasImage) lines.push(`1 OBJE ${mediaPointer(p.pointer)}`);
+    if (p.fams)  lines.push(`1 FAMS ${p.fams}`);
+    if (p.famc)  lines.push(`1 FAMC ${p.famc}`);
+  }
+
+  for (const f of families) {
+    lines.push(`0 ${f.pointer} FAM`);
+    if (f.husband) lines.push(`1 HUSB ${f.husband}`);
+    if (f.wife)    lines.push(`1 WIFE ${f.wife}`);
+    for (const child of (f.children || [])) lines.push(`1 CHIL ${child}`);
+    if (f.date_of_marriage || f.place_of_marriage) {
+      lines.push('1 MARR');
+      if (f.date_of_marriage)  lines.push(`2 DATE ${f.date_of_marriage}`);
+      if (f.place_of_marriage) lines.push(`2 PLAC ${f.place_of_marriage}`);
+    }
+  }
+
+  if (includeMediaRefs) {
+    for (const p of people) {
+      if (!p._hasImage) continue;
+      const ext = imageExtension(p._imageDataUri);
+      const filename = `media/${p.pointer}.${ext}`;
+      lines.push(`0 ${mediaPointer(p.pointer)} OBJE`);
+      lines.push(`1 FILE ${filename}`);
+      lines.push(`2 FORM ${ext.toUpperCase()}`);
+    }
+  }
+
+  lines.push('0 TRLR');
+  return lines.join('\r\n') + '\r\n';
+}
+
+function exportZip(people, families, imageMap) {
+  // Annotate people with image presence for OBJE record generation
+  const annotated = people.map(p => {
+    const uri = imageMap[p.pointer];
+    return uri ? { ...p, _hasImage: true, _imageDataUri: uri } : p;
+  });
+
+  const gedText = exportToGedcom(annotated, families, { includeMediaRefs: true });
+
+  const files = {};
+  files['tree.ged'] = fflate.strToU8(gedText);
+
+  for (const p of annotated) {
+    if (!p._hasImage) continue;
+    const uri = p._imageDataUri;
+    const ext = imageExtension(uri);
+    const b64 = uri.replace(/^data:image\/\w+;base64,/, '');
+    // atob is available in browser; in Node (tests) we use Buffer
+    const binary = typeof atob !== 'undefined'
+      ? Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+      : Buffer.from(b64, 'base64');
+    files[`media/${p.pointer}.${ext}`] = binary;
+  }
+
+  return fflate.zipSync(files, { level: 6 });
+}
+
+if (typeof module !== 'undefined') module.exports = { exportToGedcom, exportZip };
+
+
     const coordinates = [];
 const toggleAreas = [];
 const addRelativeAreas = [];
@@ -4407,8 +5096,21 @@ function drawNode(ctx, node) {
         }
       }
     }
+    for (const famPointer of (node.soloFams || [])) {
+      if (!collapsedNodes.has(node.id + '_' + famPointer)) {
+        const famChildren = (node.childrenByFam || {})[famPointer] || [];
+        for (const child of famChildren) {
+          drawNode(ctx, child);
+        }
+      }
+    }
   } else if (!isCollapsed) {
     for (const child of node.children) {
+      // For couple nodes: check if this child belongs to a collapsed solo family
+      if (node.soloFams && node.soloFams.length > 0) {
+        const soloP = child.data.find(cp => cp.famc && node.soloFams.includes(cp.famc));
+        if (soloP && collapsedNodes.has(node.id + '_' + soloP.famc)) continue;
+      }
       drawNode(ctx, child);
     }
   }
@@ -4505,54 +5207,137 @@ function drawNode(ctx, node) {
       pChildren.y = y + PERSON_HEIGHT / 2;
     }
 
+    // For each child, determine if it belongs to one of this node's solo families.
+    // Solo-family children exit from the owning parent's card center, not the couple midpoint.
+    const getSoloFamc = (child) => {
+      if (!node.soloFams || node.soloFams.length === 0) return null;
+      const p = child.data.find(cp => cp.famc && node.soloFams.includes(cp.famc));
+      return p ? p.famc : null;
+    };
+
     if (!isCollapsed) {
       for (const child of node.children) {
-        if (isLR) {
-          const childLeft = child._x * mx;
-          const childX = childLeft;
-          let childY;
-          if (child.type === 'couple') {
-            const lrPersonOffset = COUPLE_VERT_HEIGHT / 2 - PERSON_HEIGHT / 2;
-            const idx = child.data[0].famc === node.fams ? 0 : 1;
-            childY = child._y * LR_MY + (idx === 0 ? -lrPersonOffset : lrPersonOffset);
-          } else if (child.type === 'chain') {
-            const lrSlot    = PERSON_HEIGHT + COUPLE_DIST;
-            const totalH    = child.data.length * PERSON_HEIGHT + (child.data.length - 1) * COUPLE_DIST;
-            const chainTopY = child._y * LR_MY - totalH / 2;
-            const idx       = child.data.findIndex(p => p.famc === node.fams);
-            childY = chainTopY + (idx >= 0 ? idx : 0) * lrSlot + PERSON_HEIGHT / 2;
+        const soloFamc = getSoloFamc(child);
+        if (soloFamc) {
+          // Solo-family child: connector exits from the owning person's card center
+          const isFamCollapsed = collapsedNodes.has(node.id + '_' + soloFamc);
+          if (isFamCollapsed) continue;
+          const famRecord = fMap[soloFamc];
+          const ownerIdx  = famRecord
+            ? node.data.findIndex(p => p.id === famRecord.husband || p.id === famRecord.wife)
+            : 0;
+          const safeIdx = ownerIdx >= 0 ? ownerIdx : 0;
+          if (isLR) {
+            const coupleTopY = node._y * LR_MY - COUPLE_VERT_HEIGHT / 2;
+            const ownerY     = coupleTopY + safeIdx * (PERSON_HEIGHT + COUPLE_DIST) + PERSON_HEIGHT / 2;
+            const childLeft  = child._x * mx;
+            let childY;
+            if (child.type === 'couple') {
+              const lrPersonOffset = COUPLE_VERT_HEIGHT / 2 - PERSON_HEIGHT / 2;
+              const idx = child.data.findIndex(p => p.famc === soloFamc);
+              childY = child._y * LR_MY + (idx <= 0 ? -lrPersonOffset : lrPersonOffset);
+            } else if (child.type === 'chain') {
+              const lrSlot    = PERSON_HEIGHT + COUPLE_DIST;
+              const totalH    = child.data.length * PERSON_HEIGHT + (child.data.length - 1) * COUPLE_DIST;
+              const chainTopY = child._y * LR_MY - totalH / 2;
+              const idx       = child.data.findIndex(p => p.famc === soloFamc);
+              childY = chainTopY + (idx >= 0 ? idx : 0) * lrSlot + PERSON_HEIGHT / 2;
+            } else {
+              childY = child._y * LR_MY;
+            }
+            const parentRight = x + PERSON_WIDTH;
+            const midX = parentRight + (childLeft - parentRight) / 4;
+            drawParentsChildEdge(ctx,
+              parentRight, ownerY, midX, ownerY, midX, childY, childLeft, childY,
+              currentTheme.edge, 10, false
+            );
           } else {
-            childY = child._y * LR_MY;
+            const ownerX      = x + safeIdx * (PERSON_WIDTH + COUPLE_DIST) + PERSON_WIDTH / 2;
+            const ownerBottom = y + PERSON_HEIGHT;
+            const childX      = childConnectionX(child, soloFamc);
+            const childY      = child._y * my;
+            const downDist    = childY - ownerBottom;
+            const round       = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
+            drawParentsChildEdge(ctx,
+              ownerX, ownerBottom, ownerX, ownerBottom + downDist / 2,
+              childX, childY - downDist / 2, childX, childY,
+              currentTheme.edge, 10, round
+            );
           }
-          const midX = (x + PERSON_WIDTH + childLeft) / 2;
-          drawParentsChildEdge(ctx,
-            pChildren.x, pChildren.y,
-            midX, pChildren.y,
-            midX, childY,
-            childX, childY,
-            currentTheme.edge, 10, false
-          );
         } else {
-          const childX = childConnectionX(child, node.fams);
-          const childY = child._y * my;
-          const downDistance = childY - pChildren.y;
-          const round = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
-          drawParentsChildEdge(ctx,
-            pChildren.x, pChildren.y,
-            pChildren.x, pChildren.y + downDistance / 2,
-            childX, childY - downDistance / 2,
-            childX, childY,
-            currentTheme.edge, 10, round
-          );
+          // Regular child: connector exits from couple midpoint
+          if (isLR) {
+            const childLeft = child._x * mx;
+            const childX = childLeft;
+            let childY;
+            if (child.type === 'couple') {
+              const lrPersonOffset = COUPLE_VERT_HEIGHT / 2 - PERSON_HEIGHT / 2;
+              const idx = child.data[0].famc === node.fams ? 0 : 1;
+              childY = child._y * LR_MY + (idx === 0 ? -lrPersonOffset : lrPersonOffset);
+            } else if (child.type === 'chain') {
+              const lrSlot    = PERSON_HEIGHT + COUPLE_DIST;
+              const totalH    = child.data.length * PERSON_HEIGHT + (child.data.length - 1) * COUPLE_DIST;
+              const chainTopY = child._y * LR_MY - totalH / 2;
+              const idx       = child.data.findIndex(p => p.famc === node.fams);
+              childY = chainTopY + (idx >= 0 ? idx : 0) * lrSlot + PERSON_HEIGHT / 2;
+            } else {
+              childY = child._y * LR_MY;
+            }
+            const midX = (x + PERSON_WIDTH + childLeft) / 2;
+            drawParentsChildEdge(ctx,
+              pChildren.x, pChildren.y,
+              midX, pChildren.y,
+              midX, childY,
+              childX, childY,
+              currentTheme.edge, 10, false
+            );
+          } else {
+            const childX = childConnectionX(child, node.fams);
+            const childY = child._y * my;
+            const downDistance = childY - pChildren.y;
+            const round = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
+            drawParentsChildEdge(ctx,
+              pChildren.x, pChildren.y,
+              pChildren.x, pChildren.y + downDistance / 2,
+              childX, childY - downDistance / 2,
+              childX, childY,
+              currentTheme.edge, 10, round
+            );
+          }
         }
       }
     }
 
-    if (node.children.length > 0) {
+    const hasRegularChildren = node.children.some(c => !getSoloFamc(c));
+    if (hasRegularChildren) {
       const toggleX = isLR ? pChildren.x + 20 : pChildren.x;
       const toggleY = isLR ? pChildren.y       : pChildren.y + 20;
       drawToggleButton(ctx, toggleX, toggleY, isCollapsed);
       toggleAreas.push({ nodeId: node.id, nodeRef: node, x: toggleX, y: toggleY, r: 14 });
+    }
+
+    // Toggle buttons for solo-family children (per owning parent's card center)
+    for (const famPointer of (node.soloFams || [])) {
+      if (!node.children.some(c => getSoloFamc(c) === famPointer)) continue;
+      const isFamCollapsed = collapsedNodes.has(node.id + '_' + famPointer);
+      const famRecord      = fMap[famPointer];
+      const ownerIdx       = famRecord
+        ? node.data.findIndex(p => p.id === famRecord.husband || p.id === famRecord.wife)
+        : 0;
+      const safeIdx = ownerIdx >= 0 ? ownerIdx : 0;
+      if (isLR) {
+        const coupleTopY  = node._y * LR_MY - COUPLE_VERT_HEIGHT / 2;
+        const ownerY      = coupleTopY + safeIdx * (PERSON_HEIGHT + COUPLE_DIST) + PERSON_HEIGHT / 2;
+        drawToggleButton(ctx, x + PERSON_WIDTH + 20, ownerY, isFamCollapsed);
+        toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node,
+                           x: x + PERSON_WIDTH + 20, y: ownerY, r: 14 });
+      } else {
+        const ownerDropX    = x + safeIdx * (PERSON_WIDTH + COUPLE_DIST) + PERSON_WIDTH / 2;
+        const ownerBottom   = y + PERSON_HEIGHT;
+        drawToggleButton(ctx, ownerDropX, ownerBottom + 20, isFamCollapsed);
+        toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node,
+                           x: ownerDropX, y: ownerBottom + 20, r: 14 });
+      }
     }
   }
 
@@ -4660,6 +5445,32 @@ function drawNode(ctx, node) {
         if (famChildren.length > 0) {
           drawToggleButton(ctx, dropX, midY + 20, isFamCollapsed);
           toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node, x: dropX, y: midY + 20, r: 14 });
+        }
+      }
+
+      // Solo families: child line exits from the anchor person's own card centre
+      const anchorDropX = leftX + sharedIdx * (PERSON_WIDTH + COUPLE_DIST) + PERSON_WIDTH / 2;
+      for (const famPointer of (node.soloFams || [])) {
+        const famChildren    = (node.childrenByFam || {})[famPointer] || [];
+        const isFamCollapsed = collapsedNodes.has(node.id + '_' + famPointer);
+
+        if (!isFamCollapsed) {
+          for (const child of famChildren) {
+            const childX   = childConnectionX(child, famPointer);
+            const childY   = child._y * my;
+            const downDist = childY - midY;
+            const round    = !child.isSingle() && (child.isLeftMost() || child.isRightMost());
+            drawParentsChildEdge(ctx,
+              anchorDropX, midY, anchorDropX, midY + downDist / 2,
+              childX, childY - downDist / 2, childX, childY,
+              currentTheme.edge, 10, round
+            );
+          }
+        }
+        if (famChildren.length > 0) {
+          drawToggleButton(ctx, anchorDropX, midY + 20, isFamCollapsed);
+          toggleAreas.push({ nodeId: node.id + '_' + famPointer, nodeRef: node,
+                             x: anchorDropX, y: midY + 20, r: 14 });
         }
       }
     }
@@ -4793,9 +5604,9 @@ async function deflate(bytes) {
   return new Uint8Array(await new Response(cs.readable).arrayBuffer());
 }
 
-async function encryptData(plaintext, password) {
+async function encryptWithPasswords(plaintext, passwords) {
   const enc        = new TextEncoder();
-  const iterations = 5_000_000;
+  const iterations = 5000000;
 
   const dek        = crypto.getRandomValues(new Uint8Array(32));
   const dataNonce  = crypto.getRandomValues(new Uint8Array(12));
@@ -4803,31 +5614,39 @@ async function encryptData(plaintext, password) {
   const compressed = await deflate(enc.encode(plaintext));
   const cipherBuf  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: dataNonce }, dekKey, compressed);
 
-  const salt      = crypto.getRandomValues(new Uint8Array(32));
-  const slotNonce = crypto.getRandomValues(new Uint8Array(12));
-  const keyMat    = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-  const kek       = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
-    keyMat,
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt']
-  );
-  const rawKek    = await crypto.subtle.exportKey('raw', kek);
-  const kekEnc    = await crypto.subtle.importKey('raw', rawKek, 'AES-GCM', false, ['encrypt']);
-  const wrappedBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: slotNonce }, kekEnc, dek);
+  const slots = [];
+  for (const password of passwords) {
+    const salt      = crypto.getRandomValues(new Uint8Array(32));
+    const slotNonce = crypto.getRandomValues(new Uint8Array(12));
+    const keyMat    = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    const kek       = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+      keyMat,
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt']
+    );
+    const rawKek     = await crypto.subtle.exportKey('raw', kek);
+    const kekEnc     = await crypto.subtle.importKey('raw', rawKek, 'AES-GCM', false, ['encrypt']);
+    const wrappedBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: slotNonce }, kekEnc, dek);
+    slots.push({
+      salt:       uint8ArrayToBase64(salt),
+      nonce:      uint8ArrayToBase64(slotNonce),
+      wrappedKey: uint8ArrayToBase64(new Uint8Array(wrappedBuf)),
+    });
+  }
 
   return {
     iterations,
     compressed: true,
     nonce:      uint8ArrayToBase64(dataNonce),
     cipherText: uint8ArrayToBase64(new Uint8Array(cipherBuf)),
-    slots: [{
-      salt:       uint8ArrayToBase64(salt),
-      nonce:      uint8ArrayToBase64(slotNonce),
-      wrappedKey: uint8ArrayToBase64(new Uint8Array(wrappedBuf)),
-    }],
+    slots,
   };
+}
+
+async function encryptData(plaintext, password) {
+  return encryptWithPasswords(plaintext, [password]);
 }
 
 function applyTranslations() {
@@ -4851,26 +5670,37 @@ function applyTranslations() {
 
 applyTranslations();
 
+const _NS             = location.pathname.replace(/\/$/, '') || '/';
+const SCRATCH_KEY     = _NS + ':familyTreeScratch';
+const SCRATCH_ROOT_KEY = _NS + ':familyTreeScratchRoot';
+const NEW_PEOPLE_KEY_NS = _NS + ':familyTreeNewPeople';
+
 async function main(data, canvas) {
   const fams = data.fams
   const rootId = data.rootId;
   const images = data.images;
 
   const originalById = new Map(data.people.map(p => [p.pointer, p]));
+  const EDITS_KEY            = _NS + ':familyTreeEdits';
+  const WEBHOOK_EMAIL_KEY    = _NS + ':familyTreeWebhookEmail';
+  const IMAGES_KEY           = _NS + ':familyTreeImages';
+  const NEW_PEOPLE_KEY       = NEW_PEOPLE_KEY_NS;
+  const FAMILY_EDITS_KEY     = _NS + ':familyTreeFamilyEdits';
+  const PINNED_KEY           = _NS + ':familyTreePinnedPerson';
+  const HIDE_SAVED_MODAL_KEY = _NS + ':familyTreeHideSavedModal';
+  const DATA_VERSION_KEY     = _NS + ':familyTreeDataVersion';
+  const LAYOUT_KEY           = _NS + ':familyTreeLayout';
+  const SELECTED_KEY         = _NS + ':selected-' + rootId;
+  const VIEW_KEY             = _NS + ':view-' + rootId;
+  const THEME_KEY            = _NS + ':theme';
+  const RELATION_A_KEY       = _NS + ':familyTree.relationA';
+  const RELATION_B_KEY       = _NS + ':familyTree.relationB';
 
-  const EDITS_KEY         = 'familyTreeEdits';
-  const WEBHOOK_EMAIL_KEY = 'familyTreeWebhookEmail';
   let edits = {};
   try { edits = JSON.parse(localStorage.getItem(EDITS_KEY) || '{}'); } catch (_) {}
 
-  const IMAGES_KEY = 'familyTreeImages';
   let imageEdits = {};
   try { imageEdits = JSON.parse(localStorage.getItem(IMAGES_KEY) || '{}'); } catch (_) {}
-
-  const NEW_PEOPLE_KEY   = 'familyTreeNewPeople';
-  const FAMILY_EDITS_KEY = 'familyTreeFamilyEdits';
-  const PINNED_KEY            = 'familyTreePinnedPerson';
-  const HIDE_SAVED_MODAL_KEY  = 'familyTreeHideSavedModal';
   let newPeople = {};
   let familyEdits = {};
   try { newPeople   = JSON.parse(localStorage.getItem(NEW_PEOPLE_KEY)   || '{}'); } catch (_) {}
@@ -4879,8 +5709,6 @@ async function main(data, canvas) {
   let root;
   let allPeopleByPointer = new Map();
   let searchIndex = [];
-
-  const DATA_VERSION_KEY = 'familyTreeDataVersion';
 
   const FIELD_LABELS = {
     givenname:      'field.givenname',
@@ -5137,7 +5965,11 @@ async function main(data, canvas) {
         const partners = p.findPartners().filter(pp => !processedInChain.has(pp.id));
 
         if (partners.length === 0) {
-          graphLayer.push(new Node(id, 'single', [p], nodeIndex, i, 0, p.fams));
+          const singleNode = new Node(id, 'single', [p], nodeIndex, i, 0, p.fams);
+          singleNode.soloFams = Object.values(fMap)
+            .filter(f => (f.husband === p.id && !f.wife) || (f.wife === p.id && !f.husband))
+            .map(f => f.pointer);
+          graphLayer.push(singleNode);
           nodeIndex++; id++;
         } else if (partners.length === 1) {
           const pp = partners[0];
@@ -5145,7 +5977,15 @@ async function main(data, canvas) {
           let nodeData, dataIndex;
           if (p.sex === 'M') { dataIndex = 0; nodeData = [p, pp]; }
           else               { nodeData = [pp, p]; dataIndex = 1; }
-          graphLayer.push(new Node(id, 'couple', nodeData, nodeIndex, i, dataIndex, nodeFams));
+          const coupleNode = new Node(id, 'couple', nodeData, nodeIndex, i, dataIndex, nodeFams);
+          // Check both members — iteration order determines which is `p` vs `pp`
+          coupleNode.soloFams = Object.values(fMap)
+            .filter(f =>
+              (f.husband === p.id  && !f.wife) || (f.wife === p.id  && !f.husband) ||
+              (f.husband === pp.id && !f.wife) || (f.wife === pp.id && !f.husband)
+            )
+            .map(f => f.pointer);
+          graphLayer.push(coupleNode);
           processedInChain.add(p.id); processedInChain.add(pp.id);
           nodeIndex++; id++;
         } else {
@@ -5154,7 +5994,12 @@ async function main(data, canvas) {
           const isMale = p.sex !== 'F';
           const chainData = isMale ? [p, ...sortedSpouses] : [...sortedSpouses, p];
           const sharedPersonIndex = isMale ? 0 : chainData.length - 1;
-          graphLayer.push(new Node(id, 'chain', chainData, nodeIndex, i, sharedPersonIndex, famsArr[0], famsArr));
+          const chainNode = new Node(id, 'chain', chainData, nodeIndex, i, sharedPersonIndex, famsArr[0], famsArr);
+          chainNode.soloFams = Object.values(fMap)
+            .filter(f => (f.husband === p.id && !f.wife) || (f.wife === p.id && !f.husband))
+            .map(f => f.pointer)
+            .filter(fp => !famsArr.includes(fp));
+          graphLayer.push(chainNode);
           processedInChain.add(p.id);
           for (const pp of sortedSpouses) processedInChain.add(pp.id);
           nodeIndex++; id++;
@@ -5165,6 +6010,7 @@ async function main(data, canvas) {
     function nodeOwnsFamily(node, famPointer) {
       if (node.fams === famPointer) return true;
       if (node.famsArray && node.famsArray.includes(famPointer)) return true;
+      if (node.soloFams && node.soloFams.includes(famPointer)) return true;
       return false;
     }
 
@@ -5261,6 +6107,7 @@ async function main(data, canvas) {
     if (changedFields.date_of_death != null) person.dod         = changedFields.date_of_death;
     if (changedFields.place_of_birth != null) person.placeOfBirth = changedFields.place_of_birth;
     if (changedFields.sex          != null) person.sex          = changedFields.sex;
+    if (changedFields.notes        != null) person.notes        = changedFields.notes;
   }
 
   function recomputeLayout() {
@@ -5295,7 +6142,6 @@ async function main(data, canvas) {
   const MIN_SCALE = 0.05;
   const MAX_SCALE = 5;
 
-  const LAYOUT_KEY    = 'familyTreeLayout';
   const _savedLayout  = localStorage.getItem(LAYOUT_KEY) || 'TD';
   layoutDirection     = _savedLayout;
   let currentLayout   = _savedLayout === 'LR' ? computeLayoutLR : computeLayout;
@@ -5495,6 +6341,15 @@ async function main(data, canvas) {
   const panelIdEl    = document.getElementById('panel-id');
   const panelBirthEl = document.getElementById('panel-birth');
   const panelDeathEl = document.getElementById('panel-death');
+  const panelParentsEl = document.getElementById('panel-parents');
+  const panelFatherEl  = document.getElementById('panel-father');
+  const panelMotherEl  = document.getElementById('panel-mother');
+  const panelSpouseEl         = document.getElementById('panel-spouse');
+  const panelSpouseNameEl     = document.getElementById('panel-spouse-name');
+  const panelSpouseMarriageEl = document.getElementById('panel-spouse-marriage');
+  const panelNotesEl   = document.getElementById('panel-notes');
+  const panelBackBtn   = document.getElementById('panel-back');
+  const panelHistory   = [];
   const panelEditBtn       = document.getElementById('panel-edit-btn');
   const panelCrosshairBtn  = document.getElementById('panel-crosshair-btn');
   const panelViewEl   = document.getElementById('panel-view');
@@ -5508,6 +6363,10 @@ async function main(data, canvas) {
   const editSaveBtn     = document.getElementById('edit-save-btn');
   const editPob         = document.getElementById('edit-pob');
   const editSex         = document.getElementById('edit-sex');
+  const editNotes       = document.getElementById('edit-notes');
+  const editDom             = document.getElementById('edit-dom');
+  const editPom             = document.getElementById('edit-pom');
+  const editMarriageSection = document.getElementById('edit-marriage-section');
   const editPhotoInput  = document.getElementById('edit-photo');
   const panelImgEditBtn    = document.getElementById('panel-img-edit-btn');
   const panelImgRemoveBtn  = document.getElementById('panel-img-remove-btn');
@@ -5518,9 +6377,8 @@ async function main(data, canvas) {
   const removeModalConfirm = document.getElementById('remove-modal-confirm');
 
   let currentPersonId = null;
+  let lastFocusedPersonId = null;
   let pendingImageBase64 = null;
-
-  const SELECTED_KEY = 'selected-' + rootId;
 
   function exitEditMode() {
     pendingImageBase64 = null;
@@ -5567,6 +6425,43 @@ async function main(data, canvas) {
     editDod.value       = p.dod          || '';
     editPob.value       = p.placeOfBirth || '';
     editSex.value       = p.sex || 'other';
+    editNotes.value     = allPeopleByPointer.get(personId)?.notes || '';
+
+    // Parent pickers
+    const famcPtr   = allPeopleByPointer.get(personId)?.famc;
+    const parentFam = famcPtr ? fMap[famcPtr] : null;
+    const curFather = parentFam?.husband ? pMap[parentFam.husband] : null;
+    const curMother = parentFam?.wife    ? pMap[parentFam.wife]    : null;
+    const editFatherSearch  = document.getElementById('edit-father-search');
+    const editFatherPointer = document.getElementById('edit-father-pointer');
+    const editMotherSearch  = document.getElementById('edit-mother-search');
+    const editMotherPointer = document.getElementById('edit-mother-pointer');
+    editFatherPointer.value = parentFam?.husband || '';
+    editFatherSearch.value  = curFather ? (`${curFather.givenname} ${curFather.surname}`).trim() : '';
+    editMotherPointer.value = parentFam?.wife    || '';
+    editMotherSearch.value  = curMother ? (`${curMother.givenname} ${curMother.surname}`).trim() : '';
+    const childBirthYear = extractYear(allPeopleByPointer.get(personId)?.date_of_birth);
+    initPersonPicker(
+      editFatherSearch, document.getElementById('edit-father-results'),
+      editFatherPointer, document.getElementById('edit-father-clear'),
+      { excludeId: personId, allowedSex: 'M', childBirthYear, otherParentEl: editMotherPointer });
+    initPersonPicker(
+      editMotherSearch, document.getElementById('edit-mother-results'),
+      editMotherPointer, document.getElementById('edit-mother-clear'),
+      { excludeId: personId, allowedSex: 'F', childBirthYear, otherParentEl: editFatherPointer });
+
+    const editFamsPtr  = allPeopleByPointer.get(personId)?.fams;
+    const editFamily   = editFamsPtr ? getFamilyRecord(editFamsPtr) : null;
+    if (editFamily) {
+      editDom.value = editFamily.date_of_marriage  || '';
+      editPom.value = editFamily.place_of_marriage || '';
+      editMarriageSection.style.display = '';
+    } else {
+      editDom.value = '';
+      editPom.value = '';
+      editMarriageSection.style.display = 'none';
+    }
+
     panelImgEditBtn.style.display = 'flex';
     panelViewEl.style.display  = 'none';
     panelEditForm.style.display = '';
@@ -5795,6 +6690,7 @@ async function main(data, canvas) {
     const person = pMap[personId];
     if (!person) return;
     currentPersonId = personId;
+    lastFocusedPersonId = personId;
     exitEditMode();
     selectedPersonId = personId;
     localStorage.setItem(SELECTED_KEY, personId);
@@ -5805,6 +6701,82 @@ async function main(data, canvas) {
       ? t('person.born') + formatGedcomDate(person.dob) + (person.placeOfBirth ? ', ' + person.placeOfBirth : '')
       : '';
     panelDeathEl.textContent = person.dod ? t('person.died') + formatGedcomDate(person.dod) : '';
+
+    // Parents section
+    const famcPtr      = allPeopleByPointer.get(personId)?.famc;
+    const parentFam    = famcPtr ? fMap[famcPtr] : null;
+    const fatherPerson = parentFam?.husband ? pMap[parentFam.husband] : null;
+    const motherPerson = parentFam?.wife    ? pMap[parentFam.wife]    : null;
+
+    function makeParentRow(person, pointer, slotExists, labelKey) {
+      const wrap = document.createElement('span');
+      wrap.appendChild(document.createTextNode(t(labelKey) + ': '));
+      if (person) {
+        const a = document.createElement('a');
+        a.textContent = (`${person.givenname} ${person.surname}`).trim() || pointer;
+        a.href = '#';
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          panelHistory.push(personId);
+          showPanel(pointer);
+        });
+        wrap.appendChild(a);
+      } else if (slotExists) {
+        const u = document.createElement('span');
+        u.className = 'panel-unknown';
+        u.textContent = t('person.unknown');
+        wrap.appendChild(u);
+      } else {
+        return null;
+      }
+      return wrap;
+    }
+
+    const fatherEl = makeParentRow(fatherPerson, parentFam?.husband, parentFam !== null, 'person.father');
+    const motherEl = makeParentRow(motherPerson, parentFam?.wife,    parentFam !== null, 'person.mother');
+    panelFatherEl.innerHTML = '';
+    panelMotherEl.innerHTML = '';
+    if (fatherEl) panelFatherEl.appendChild(fatherEl);
+    if (motherEl) panelMotherEl.appendChild(motherEl);
+    panelParentsEl.style.display = (fatherEl || motherEl) ? '' : 'none';
+
+    // Spouse section
+    const famsPtr  = allPeopleByPointer.get(personId)?.fams;
+    const family   = famsPtr ? fMap[famsPtr] : null;
+    const spouseId = family
+      ? (family.husband === personId ? family.wife : family.husband)
+      : null;
+    const spouse   = spouseId ? pMap[spouseId] : null;
+    panelSpouseNameEl.innerHTML = '';
+    if (family) {
+      if (spouse) {
+        const a = document.createElement('a');
+        a.textContent = (`${spouse.givenname} ${spouse.surname}`).trim() || spouseId;
+        a.href = '#';
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          panelHistory.push(personId);
+          showPanel(spouseId);
+        });
+        const wrap = document.createElement('span');
+        wrap.appendChild(document.createTextNode(t('person.spouse') + ': '));
+        wrap.appendChild(a);
+        panelSpouseNameEl.appendChild(wrap);
+      } else {
+        panelSpouseNameEl.textContent = t('person.spouse') + ': ' + t('person.unknown');
+      }
+      const domFmt = family.date_of_marriage  ? formatGedcomDate(family.date_of_marriage)  : '';
+      const pomFmt = family.place_of_marriage || '';
+      const parts  = [domFmt, pomFmt].filter(Boolean);
+      panelSpouseMarriageEl.textContent = parts.length ? parts.join(', ') : '';
+    }
+    panelSpouseEl.style.display = family ? '' : 'none';
+
+    const notes = allPeopleByPointer.get(personId)?.notes || '';
+    panelNotesEl.textContent = notes;
+    panelNotesEl.style.display = notes ? '' : 'none';
+
+    panelBackBtn.style.display = panelHistory.length > 0 ? '' : 'none';
     panelEl.classList.add('open');
     panelCrosshairBtn.classList.toggle('pinned', localStorage.getItem(PINNED_KEY) === personId);
     redraw();
@@ -5816,10 +6788,15 @@ async function main(data, canvas) {
     exitEditMode();
     localStorage.removeItem(SELECTED_KEY);
     panelEl.classList.remove('open');
+    panelHistory.length = 0;
     redraw();
   }
 
   panelCloseEl.addEventListener('click', closePanel);
+  panelBackBtn.addEventListener('click', () => {
+    const prev = panelHistory.pop();
+    if (prev) showPanel(prev);
+  });
 
   panelRemoveBtn.addEventListener('click', () => {
     if (!currentPersonId) return;
@@ -5870,7 +6847,8 @@ async function main(data, canvas) {
     const date_of_death  = editDod.value.trim();
     const place_of_birth = editPob.value.trim();
     const sex            = editSex.value;
-    const changedFields  = { givenname, surname, fullname, date_of_birth, date_of_death, place_of_birth, sex };
+    const notes          = editNotes.value;
+    const changedFields  = { givenname, surname, fullname, date_of_birth, date_of_death, place_of_birth, sex, notes };
     applyDelta(currentPersonId, changedFields);
     updateIndyvidual(currentPersonId, changedFields);
     if (pendingImageBase64 !== null) {
@@ -5892,6 +6870,66 @@ async function main(data, canvas) {
       }
       pendingImageBase64 = null;
     }
+
+    // Parent reassignment
+    const newFatherId = document.getElementById('edit-father-pointer').value || null;
+    const newMotherId = document.getElementById('edit-mother-pointer').value || null;
+    const oldFamcPtr  = allPeopleByPointer.get(currentPersonId)?.famc || null;
+    const oldFamily   = oldFamcPtr ? fMap[oldFamcPtr] : null;
+    const oldFatherId = oldFamily?.husband || null;
+    const oldMotherId = oldFamily?.wife    || null;
+    if (newFatherId !== oldFatherId || newMotherId !== oldMotherId) {
+      if (oldFamcPtr) {
+        const oldFam = getFamilyRecord(oldFamcPtr);
+        const updatedChildren = (oldFam.children || []).filter(c => c !== currentPersonId);
+        const updated = { ...(familyEdits[oldFamcPtr] || {}), children: updatedChildren };
+        if (updated._new && !updated.husband && !updated.wife && !updatedChildren.length) {
+          delete familyEdits[oldFamcPtr];
+        } else {
+          familyEdits[oldFamcPtr] = updated;
+        }
+      }
+      if (newFatherId || newMotherId) {
+        let newFamPtr = findFamilyBetween(newFatherId, newMotherId);
+        if (!newFamPtr) {
+          if (newFatherId && !newMotherId) {
+            const solo = Object.values(fMap).find(f => f.husband === newFatherId && !f.wife);
+            newFamPtr = solo?.pointer ?? null;
+          } else if (newMotherId && !newFatherId) {
+            const solo = Object.values(fMap).find(f => f.wife === newMotherId && !f.husband);
+            newFamPtr = solo?.pointer ?? null;
+          }
+        }
+        if (!newFamPtr) {
+          newFamPtr = nextFamilyId();
+          familyEdits[newFamPtr] = { _new: true, husband: newFatherId, wife: newMotherId, children: [] };
+        }
+        const newFam = getFamilyRecord(newFamPtr);
+        if (!(newFam.children || []).includes(currentPersonId)) {
+          familyEdits[newFamPtr] = {
+            ...(familyEdits[newFamPtr] || {}),
+            children: [...(newFam.children || []), currentPersonId],
+          };
+        }
+        updateNewPeopleOrEdits(currentPersonId, { famc: newFamPtr });
+      } else {
+        updateNewPeopleOrEdits(currentPersonId, { famc: null });
+      }
+      await rebuildGraph();
+    }
+
+    const famsPtr = allPeopleByPointer.get(currentPersonId)?.fams;
+    if (famsPtr) {
+      const dom = editDom.value.trim();
+      const pom = editPom.value.trim();
+      const currentFam = getFamilyRecord(famsPtr);
+      if (dom !== (currentFam.date_of_marriage  || '') ||
+          pom !== (currentFam.place_of_marriage || '')) {
+        familyEdits[famsPtr] = { ...(familyEdits[famsPtr] || {}), date_of_marriage: dom, place_of_marriage: pom };
+        localStorage.setItem(FAMILY_EDITS_KEY, JSON.stringify(familyEdits));
+      }
+    }
+
     showPanel(currentPersonId);
     redraw();
     updateSettingsEditCount();
@@ -5930,6 +6968,18 @@ async function main(data, canvas) {
     return { ...base, ...patch };
   }
 
+  function findFamiliesOfPerson(personId) {
+    return Object.values(fMap).filter(f => f.husband === personId || f.wife === personId);
+  }
+
+  function findFamilyBetween(p1Id, p2Id) {
+    const fam = Object.values(fMap).find(f =>
+      (f.husband === p1Id && f.wife === p2Id) ||
+      (f.husband === p2Id && f.wife === p1Id)
+    );
+    return fam?.pointer ?? null;
+  }
+
   const addRelativePanelEl  = document.getElementById('add-relative-panel');
   const addRelativeTitleEl  = document.getElementById('add-relative-title');
   const addRelativeFormEl   = document.getElementById('add-relative-form');
@@ -5944,6 +6994,97 @@ async function main(data, canvas) {
     if (!dateStr) return null;
     const m = dateStr.match(/\b(\d{4})\b/);
     return m ? parseInt(m[1], 10) : null;
+  }
+
+  function isAncestorOf(personId, candidateId) {
+    const visited = new Set();
+    const queue = [personId];
+    while (queue.length) {
+      const current = queue.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+      const famc = allPeopleByPointer.get(current)?.famc;
+      if (!famc) continue;
+      const fam = fMap[famc];
+      if (!fam) continue;
+      const parents = [fam.husband, fam.wife].filter(Boolean);
+      if (parents.includes(candidateId)) return true;
+      queue.push(...parents);
+    }
+    return false;
+  }
+
+  function initPersonPicker(searchEl, resultsEl, hiddenEl, clearBtn, opts = {}) {
+    const { excludeId, allowedSex, childBirthYear, otherParentEl } = opts;
+
+    function getMatches(q) {
+      return Object.values(pMap)
+        .filter(p => {
+          if (p.id === excludeId) return false;
+          if (isAncestorOf(p.id, excludeId)) return false;
+          if (otherParentEl && p.id === otherParentEl.value) return false;
+          if (allowedSex && p.sex !== allowedSex && p.sex !== 'unknown') return false;
+          const candidateYear = extractYear(p.dob);
+          if (candidateYear !== null && childBirthYear !== null) {
+            if (candidateYear >= childBirthYear) return false;
+            if (childBirthYear - candidateYear < 13) return false;
+          }
+          return (`${p.givenname} ${p.surname}`).toLowerCase().includes(q);
+        })
+        .slice(0, 10);
+    }
+
+    function warnings(p) {
+      const flags = [];
+      const candidateYear = extractYear(p.dob);
+      const candidateDod  = extractYear(p.dod);
+      if (candidateYear !== null && childBirthYear !== null) {
+        const gap = childBirthYear - candidateYear;
+        const ageThreshold = allowedSex === 'F' ? 55 : 70;
+        if (gap > ageThreshold) flags.push('⚠');
+      }
+      if (candidateDod !== null && childBirthYear !== null && candidateDod < childBirthYear - 1) {
+        flags.push('⚠');
+      }
+      return [...new Set(flags)];
+    }
+
+    searchEl.addEventListener('input', () => {
+      const q = searchEl.value.trim().toLowerCase();
+      if (!q) { resultsEl.style.display = 'none'; return; }
+      const matches = getMatches(q);
+      resultsEl.innerHTML = '';
+      if (!matches.length) { resultsEl.style.display = 'none'; return; }
+      for (const p of matches) {
+        const li = document.createElement('li');
+        const year = extractYear(p.dob);
+        li.textContent = `${p.givenname} ${p.surname}${year ? ` (${year})` : ''}`;
+        const warns = warnings(p);
+        if (warns.length) {
+          const w = document.createElement('span');
+          w.className = 'picker-warn';
+          w.textContent = ' ⚠';
+          li.appendChild(w);
+        }
+        li.addEventListener('mousedown', () => {
+          hiddenEl.value = p.id;
+          searchEl.value = (`${p.givenname} ${p.surname}`).trim();
+          resultsEl.style.display = 'none';
+        });
+        resultsEl.appendChild(li);
+      }
+      resultsEl.style.display = '';
+    });
+
+    clearBtn.addEventListener('click', () => {
+      hiddenEl.value = '';
+      searchEl.value = '';
+      resultsEl.style.display = 'none';
+    });
+
+    searchEl.addEventListener('blur', () => {
+      setTimeout(() => { resultsEl.style.display = 'none'; }, 150);
+    });
   }
 
   function validateChildDob() {
@@ -5979,6 +7120,33 @@ async function main(data, canvas) {
 
   let addingRelativeToId = null;
 
+  const secondParentRow     = document.getElementById('ar-second-parent-row');
+  const secondParentOptions = document.getElementById('ar-second-parent-options');
+
+  function populateSecondParentSelector(personId) {
+    const anchorFamilies = findFamiliesOfPerson(personId);
+    const partners = anchorFamilies
+      .map(f => (f.husband === personId ? f.wife : f.husband))
+      .filter(Boolean);
+
+    if (partners.length >= 1) {
+      secondParentOptions.innerHTML = '';
+      for (let i = 0; i < partners.length; i++) {
+        const partnerId = partners[i];
+        const pp = pMap[partnerId];
+        const name = pp ? `${pp.givenname} ${pp.surname}`.trim() || partnerId : partnerId;
+        secondParentOptions.innerHTML +=
+          `<label><input type="radio" name="ar-second-parent" value="${partnerId}"${i === 0 ? ' checked' : ''}> ${name}</label>`;
+      }
+      secondParentOptions.innerHTML +=
+        `<label><input type="radio" name="ar-second-parent" value="__unknown__"> ${t('rel.unknownParent')}</label>`;
+      const isChild = document.querySelector('input[name="rel"]:checked')?.value === 'child';
+      secondParentRow.style.display = isChild ? '' : 'none';
+    } else {
+      secondParentRow.style.display = 'none';
+    }
+  }
+
   function showAddRelativePanel(personId) {
     addingRelativeToId = personId;
     const p = pMap[personId];
@@ -5987,18 +7155,33 @@ async function main(data, canvas) {
     arDobWarnEl.style.display = 'none';
     addRelativeSaveEl.disabled = false;
     addRelativeFormEl.reset();
+    populateSecondParentSelector(personId);
     closePanel();
     addRelativePanelEl.classList.add('open');
   }
 
   arDobEl.addEventListener('input', validateChildDob);
   document.querySelectorAll('input[name="rel"]').forEach(r => r.addEventListener('change', validateChildDob));
+  document.querySelectorAll('input[name="rel"]').forEach(r => r.addEventListener('change', () => {
+    if (!addingRelativeToId) return;
+    const isChild = document.querySelector('input[name="rel"]:checked')?.value === 'child';
+    const hasPartners = findFamiliesOfPerson(addingRelativeToId)
+      .some(f => (f.husband === addingRelativeToId && f.wife) || (f.wife === addingRelativeToId && f.husband));
+    const show = isChild && hasPartners;
+    secondParentRow.style.display = show ? '' : 'none';
+    if (show) {
+      const first = secondParentOptions.querySelector('input[type="radio"]');
+      if (first) first.checked = true;
+    }
+  }));
 
   addRelativeCloseEl.addEventListener('click',  () => addRelativePanelEl.classList.remove('open'));
   addRelativeCancelEl.addEventListener('click', () => addRelativePanelEl.classList.remove('open'));
 
+  let addRelativeInFlight = false;
   addRelativeFormEl.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (addRelativeInFlight) return;
     const rel       = document.querySelector('input[name="rel"]:checked').value;
     const givenname = document.getElementById('ar-givenname').value.trim();
     const surname   = document.getElementById('ar-surname').value.trim();
@@ -6013,12 +7196,19 @@ async function main(data, canvas) {
       return;
     }
 
+    const secondParentRowVisible = secondParentRow.style.display !== 'none';
+    const secondParentId = secondParentRowVisible
+      ? (document.querySelector('input[name="ar-second-parent"]:checked')?.value ?? null)
+      : null;
+
+    addRelativeInFlight = true;
     await addRelative(addingRelativeToId, rel, { givenname, surname, sex,
-      date_of_birth: dob, date_of_death: dod, place_of_birth: pob });
+      date_of_birth: dob, date_of_death: dod, place_of_birth: pob }, secondParentId);
+    addRelativeInFlight = false;
     addRelativePanelEl.classList.remove('open');
   });
 
-  async function addRelative(personId, rel, fields) {
+  async function addRelative(personId, rel, fields, secondParentId = null) {
     const anchorPerson = allPeopleByPointer.get(personId);
     if (!anchorPerson) return;
     const newId    = nextPersonId();
@@ -6026,16 +7216,56 @@ async function main(data, canvas) {
     const newPerson = { ...fields, fullname, pointer: newId, fams: null, famc: null };
 
     if (rel === 'child') {
-      let famPointer = anchorPerson.fams;
-      if (!famPointer) {
-        famPointer = nextFamilyId();
-        familyEdits[famPointer] = { _new: true,
-          husband: anchorPerson.sex === 'M' ? personId : null,
-          wife:    anchorPerson.sex === 'F' ? personId : null,
-          children: [] };
-        anchorPerson.fams = famPointer;
-        updateNewPeopleOrEdits(personId, { fams: famPointer });
+      let famPointer;
+
+      if (secondParentId && secondParentId !== '__unknown__') {
+        // Known partner selected: use the existing shared family
+        famPointer = findFamilyBetween(personId, secondParentId);
+        if (!famPointer) {
+          addRelativeErrorEl.textContent = t('rel.errorFamilyNotFound');
+          addRelativeErrorEl.style.display = '';
+          return;
+        }
+
+      } else if (secondParentId === '__unknown__') {
+        // Unknown partner: find or create a solo family for the anchor
+        const soloFam = Object.values(fMap).find(f =>
+          (f.husband === personId && !f.wife) || (f.wife === personId && !f.husband)
+        );
+        if (soloFam) {
+          famPointer = soloFam.pointer;
+        } else {
+          famPointer = nextFamilyId();
+          familyEdits[famPointer] = {
+            _new: true, pointer: famPointer,
+            husband: anchorPerson.sex === 'M' ? personId : null,
+            wife:    anchorPerson.sex === 'F' ? personId : null,
+            children: [],
+          };
+        }
+
+      } else {
+        // Selector not shown — anchor has no existing partners at all.
+        // Reuse an existing solo family if one already exists.
+        const soloFam = Object.values(fMap).find(f =>
+          (f.husband === personId && !f.wife) || (f.wife === personId && !f.husband)
+        );
+        if (soloFam) {
+          famPointer = soloFam.pointer;
+        } else {
+          famPointer = nextFamilyId();
+          familyEdits[famPointer] = {
+            _new: true, pointer: famPointer,
+            husband: anchorPerson.sex === 'M' ? personId : null,
+            wife:    anchorPerson.sex === 'F' ? personId : null,
+            children: [],
+          };
+          // Keep p.fams in sync so the single-node connector uses the correct family pointer
+          anchorPerson.fams = famPointer;
+          updateNewPeopleOrEdits(personId, { fams: famPointer });
+        }
       }
+
       const fam = getFamilyRecord(famPointer);
       familyEdits[famPointer] = { ...(familyEdits[famPointer] || {}), children: [...(fam.children || []), newId] };
       newPerson.famc = famPointer;
@@ -6186,7 +7416,6 @@ async function main(data, canvas) {
   panX = home.panX;
   panY = home.panY;
 
-  const VIEW_KEY = 'view-' + rootId;
   let saveTimer = null;
   function scheduleSave() {
     clearTimeout(saveTimer);
@@ -6413,12 +7642,12 @@ async function main(data, canvas) {
     redraw();
   }
 
-  const storedTheme = localStorage.getItem('theme');
+  const storedTheme = localStorage.getItem(THEME_KEY);
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   applyTheme(storedTheme !== null ? storedTheme === 'dark' : prefersDark);
 
   darkToggle.addEventListener('change', () => {
-    localStorage.setItem('theme', darkToggle.checked ? 'dark' : 'light');
+    localStorage.setItem(THEME_KEY, darkToggle.checked ? 'dark' : 'light');
     applyTheme(darkToggle.checked);
   });
 
@@ -6439,10 +7668,19 @@ async function main(data, canvas) {
     currentLayout   = layoutDirection === 'LR' ? computeLayoutLR : computeLayout;
     localStorage.setItem(LAYOUT_KEY, layoutDirection);
     rebuildGraph().then(() => {
-      const home = getHomePan();
-      panX = home.panX;
-      panY = home.panY;
+      // rebuildGraph() calls redraw() internally, so coordinates[] is already populated
+      // with graph-space positions (scale-independent) for the new layout.
       scale = homeScale;
+      const focusId = lastFocusedPersonId;
+      const rect = focusId ? findPersonCanvasRect(focusId) : null;
+      if (rect) {
+        panX = window.innerWidth  / 2 - (rect.x + rect.width  / 2) * scale;
+        panY = window.innerHeight / 2 - (rect.y + rect.height / 2) * scale;
+      } else {
+        const home = getHomePan();
+        panX = home.panX;
+        panY = home.panY;
+      }
       scheduleSave();
       redraw();
     });
@@ -6452,6 +7690,8 @@ async function main(data, canvas) {
   const hasEditsDescEl   = document.getElementById('has-edits-desc');
   const resetEditsBtn    = document.getElementById('settings-reset-edits');
   const downloadEditsBtn  = document.getElementById('settings-download-edits');
+  const exportGedcomBtn    = document.getElementById('export-gedcom-btn');
+  const exportGedcomZipBtn = document.getElementById('export-gedcom-zip-btn');
   const sendWebhookBtn        = document.getElementById('settings-send-webhook');
   const webhookMessageEl      = document.getElementById('webhook-message');
   const webhookEmailEl        = document.getElementById('webhook-email');
@@ -6543,6 +7783,66 @@ async function main(data, canvas) {
     URL.revokeObjectURL(url);
   });
 
+  function buildMergedForExport() {
+    const mergedPeople = data.people.map(p => {
+      const delta = edits[p.pointer];
+      return delta ? { ...p, ...delta } : p;
+    }).concat(
+      Object.entries(newPeople).map(([pointer, fields]) => ({ pointer, ...fields }))
+    ).filter(p => !p.removed);
+
+    const mergedFams = data.fams.map(f => {
+      const patch = familyEdits[f.pointer];
+      if (!patch) return f;
+      const { _new, ...rest } = patch;
+      return { ...f, ...rest };
+    }).concat(
+      Object.entries(familyEdits)
+        .filter(([, v]) => v._new)
+        .map(([pointer, fields]) => { const { _new, ...rest } = fields; return { pointer, ...rest }; })
+    ).filter(f => f.husband || f.wife || (f.children || []).length > 0);
+
+    const mergedImages = { ...data.images };
+    for (const [id, base64] of Object.entries(imageEdits)) {
+      if (base64 === '') delete mergedImages[id];
+      else mergedImages[id] = base64;
+    }
+
+    return { mergedPeople, mergedFams, mergedImages };
+  }
+
+  function exportFilename(ext) {
+    const today    = new Date();
+    const datePart = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const root     = pMap[rootId];
+    const surname  = root?.surname ? `-${root.surname.toLowerCase()}` : '';
+    return `family-tree${surname}-${datePart}.${ext}`;
+  }
+
+  exportGedcomBtn.addEventListener('click', () => {
+    const { mergedPeople, mergedFams } = buildMergedForExport();
+    const ged  = exportToGedcom(mergedPeople, mergedFams);
+    const blob = new Blob([ged], { type: 'text/plain;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: exportFilename('ged') });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  exportGedcomZipBtn.addEventListener('click', () => {
+    const { mergedPeople, mergedFams, mergedImages } = buildMergedForExport();
+    const zipBytes = exportZip(mergedPeople, mergedFams, mergedImages);
+    const blob = new Blob([zipBytes], { type: 'application/zip' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: exportFilename('zip') });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
   const savedLocallyModal    = document.getElementById('saved-locally-modal');
   const savedLocallyOk       = document.getElementById('saved-locally-ok');
   const savedLocallyCheckbox = document.getElementById('saved-locally-checkbox');
@@ -6608,30 +7908,89 @@ async function main(data, canvas) {
     }
   });
 
-  const exportPasswordInput = document.getElementById('export-password');
+  const exportListEl        = document.getElementById('export-password-list');
+  const exportAddBtn        = document.getElementById('export-password-add');
   const exportHtmlBtn       = document.getElementById('export-html-btn');
   const exportHtmlStatus    = document.getElementById('export-html-status');
   const exportPasswordError = document.getElementById('export-password-error');
 
-  const validateExportPassword = () => {
-    const val = exportPasswordInput.value;
-    if (!val) return 'Enter a password (min. 8 characters).';
-    if (val.length < 8) return `Password too short — ${8 - val.length} more character${8 - val.length === 1 ? '' : 's'} needed.`;
+  function getPasswordInputs() {
+    return Array.from(exportListEl.querySelectorAll('input'));
+  }
+
+  function updateRemoveButtons() {
+    const rows = exportListEl.querySelectorAll('.export-pw-row');
+    rows.forEach(r => {
+      r.querySelector('.export-pw-remove').style.visibility = rows.length > 1 ? '' : 'hidden';
+    });
+  }
+
+  function validatePasswords() {
+    const inputs = getPasswordInputs();
+    for (const inp of inputs) {
+      if (!inp.value) return 'Enter a password (min. 8 characters).';
+      if (inp.value.length < 8) {
+        const short = 8 - inp.value.length;
+        return `Password too short — ${short} more character${short === 1 ? '' : 's'} needed.`;
+      }
+    }
+    const vals = inputs.map(i => i.value);
+    if (new Set(vals).size !== vals.length) return 'Each recipient must have a unique password.';
     return '';
-  };
+  }
 
-  exportPasswordError.textContent = validateExportPassword();
-  exportHtmlBtn.disabled = true;
-
-  exportPasswordInput.addEventListener('input', () => {
-    const err = validateExportPassword();
+  function revalidate() {
+    const err = validatePasswords();
     exportPasswordError.textContent = err;
     exportHtmlBtn.disabled = !!err;
-  });
+  }
+
+  function addPasswordRow() {
+    const row       = document.createElement('div');
+    row.className   = 'export-pw-row';
+
+    const input            = document.createElement('input');
+    input.type             = 'password';
+    input.autocomplete     = 'new-password';
+    input.placeholder      = t('data.passwordPlaceholder');
+    input.addEventListener('input', revalidate);
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type  = 'button';
+    toggleBtn.className = 'export-pw-toggle';
+    toggleBtn.textContent = '👁';
+    toggleBtn.setAttribute('aria-label', 'Show password');
+    toggleBtn.addEventListener('click', () => {
+      const revealing = input.type === 'password';
+      input.type = revealing ? 'text' : 'password';
+      toggleBtn.dataset.revealed = revealing;
+      toggleBtn.setAttribute('aria-label', revealing ? 'Hide password' : 'Show password');
+    });
+
+    const removeBtn           = document.createElement('button');
+    removeBtn.type            = 'button';
+    removeBtn.className       = 'export-pw-remove';
+    removeBtn.textContent     = '×';
+    removeBtn.setAttribute('aria-label', t('data.passwordRemove'));
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+      updateRemoveButtons();
+      revalidate();
+    });
+
+    row.append(input, toggleBtn, removeBtn);
+    exportListEl.appendChild(row);
+    updateRemoveButtons();
+    input.focus();
+    revalidate();
+  }
+
+  exportAddBtn.addEventListener('click', addPasswordRow);
+  addPasswordRow();  // start with one row
 
   exportHtmlBtn.addEventListener('click', async () => {
-    const password = exportPasswordInput.value;
-    if (validateExportPassword()) return;
+    const passwords = getPasswordInputs().map(i => i.value);
+    if (validatePasswords()) return;
 
     const shellEl = document.getElementById('page-shell');
     if (!shellEl || !shellEl.textContent.includes('__FAMILY_TREE_DATA__')) {
@@ -6640,7 +7999,7 @@ async function main(data, canvas) {
     }
 
     exportHtmlBtn.disabled       = true;
-    exportHtmlStatus.textContent = 'Encrypting… (this takes ~10 s)';
+    exportHtmlStatus.textContent = `Encrypting… (~10 s per password)`;
 
     try {
       const mergedPeople = data.people.map(p => ({ ...p, ...(edits[p.pointer] || {}) }));
@@ -6651,7 +8010,7 @@ async function main(data, canvas) {
       }
       const plaintext = JSON.stringify({ dataVersion: data.dataVersion || 0, rootId: data.rootId, people: mergedPeople, fams: data.fams, images: mergedImages });
 
-      const encObj    = await encryptData(plaintext, password);
+      const encObj    = await encryptWithPasswords(plaintext, passwords);
       const dataBlock = `const encryptedData = ${JSON.stringify(encObj, null, ' ')};`;
 
       // shell = HTML frame + CSS + data placeholder, #app-code is empty
@@ -6661,9 +8020,12 @@ async function main(data, canvas) {
       // complete, working HTML. The shell stored in #page-shell stays JS-free
       // so the downloaded file doesn't duplicate the scripts a second time.
       const jsContent = document.getElementById('app-code').textContent;
+      // Use function replacements throughout: jsContent contains fflate's minified code
+      // which includes SCRIPT_MAIN — a bare string replacement would expand that as "insert matched
+      // substring here" and corrupt the output.
       const shellWithJs = shell.replace(
         '<script id="app-code"><' + '/script>',
-        '<script id="app-code">' + jsContent + '<' + '/script>'
+        () => '<script id="app-code">' + jsContent + '<' + '/script>'
       );
 
       // Re-embed the JS-free shell so the downloaded file can also self-export.
@@ -6671,11 +8033,11 @@ async function main(data, canvas) {
       const newHtml = shellWithJs
         .replace(
           /\/\* __FAMILY_TREE_DATA_START__ \*\/__FAMILY_TREE_DATA__\/\* __FAMILY_TREE_DATA_END__ \*\//,
-          `/* __FAMILY_TREE_DATA_START__ */\n${dataBlock}\n/* __FAMILY_TREE_DATA_END__ */`
+          () => `/* __FAMILY_TREE_DATA_START__ */\n${dataBlock}\n/* __FAMILY_TREE_DATA_END__ */`
         )
         .replace(
           '<script type="text/plain" id="page-shell"><' + '/script>',
-          `<script type="text/plain" id="page-shell">${escapedShell}<` + '/script>'
+          () => `<script type="text/plain" id="page-shell">${escapedShell}<` + '/script>'
         );
 
       const blob = new Blob([newHtml], { type: 'text/html' });
@@ -6695,33 +8057,70 @@ async function main(data, canvas) {
   mergeBtn.addEventListener('click', async () => {
     const files = Array.from(gedFileInput.files);
     if (files.length === 0) {
-      mergeStatus.textContent = 'Select at least one .ged file.';
+      mergeStatus.textContent = 'Select at least one .ged or .zip file.';
       return;
     }
     mergeBtn.disabled = true;
     mergeStatus.textContent = 'Processing...';
     try {
-      const texts = await Promise.all(files.map(f => f.text()));
+      const gedTexts   = [];
+      const zipImages  = {};
+      const fileLabels = [];
+
+      for (const file of files) {
+        if (file.name.toLowerCase().endsWith('.zip')) {
+          const buf      = await file.arrayBuffer();
+          const entries  = fflate.unzipSync(new Uint8Array(buf));
+          const gedEntry = Object.keys(entries).find(k => k.toLowerCase().endsWith('.ged'));
+          if (!gedEntry) throw new Error(`${file.name}: no .ged file found inside ZIP`);
+          gedTexts.push(fflate.strFromU8(entries[gedEntry]));
+          fileLabels.push(file.name);
+          for (const [path, bytes] of Object.entries(entries)) {
+            const m = path.match(/(@[IF]\d+@)\.(jpe?g|png|gif|webp)$/i);
+            if (!m) continue;
+            const pointer = m[1];
+            const ext     = m[2].toLowerCase() === 'jpg' ? 'jpeg' : m[2].toLowerCase();
+            const b64     = btoa(String.fromCharCode(...bytes));
+            zipImages[pointer] = `data:image/${ext};base64,${b64}`;
+          }
+        } else {
+          gedTexts.push(await file.text());
+          fileLabels.push(file.name);
+        }
+      }
+
       const selectedRoot = rootIdInput.value.trim() || rootId;
-      const result = mergeGedcoms(texts, selectedRoot);
-      const content = serializeToDataJs(result);
-      const blob = new Blob([content], { type: 'text/javascript' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      const result       = mergeGedcoms(gedTexts, selectedRoot);
+
+      const imagesMap = Object.keys(zipImages).length > 0 ? zipImages : {};
+      const lines_js = [
+        `const rootId = ${JSON.stringify(result.rootId)}`,
+        `const people = ${JSON.stringify(result.people, null, 2)}`,
+        `const fams = ${JSON.stringify(result.families, null, 2)}`,
+        `const images = ${JSON.stringify(imagesMap, null, 2)}`,
+        `if (typeof module !== 'undefined') module.exports = { rootId, people, fams, images };`,
+      ].join('\n\n');
+
+      const blob = new Blob([lines_js], { type: 'text/javascript' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
       a.download = 'data.js';
       a.click();
       URL.revokeObjectURL(url);
 
-      const lines = [];
+      const statusLines = [];
       result.stats.inputs.forEach((s, i) => {
-        lines.push(`${files[i].name}: ${s.people} people, ${s.families} families`);
+        statusLines.push(`${fileLabels[i]}: ${s.people} people, ${s.families} families`);
       });
       if (result.stats.duplicatesPeople > 0 || result.stats.duplicatesFamilies > 0) {
-        lines.push(`duplicates removed: ${result.stats.duplicatesPeople} people, ${result.stats.duplicatesFamilies} families`);
+        statusLines.push(`duplicates removed: ${result.stats.duplicatesPeople} people, ${result.stats.duplicatesFamilies} families`);
       }
-      lines.push(`→ merged: ${result.people.length} people, ${result.families.length} families`);
-      mergeStatus.textContent = lines.join('\n');
+      statusLines.push(`→ merged: ${result.people.length} people, ${result.families.length} families`);
+      if (Object.keys(zipImages).length > 0) {
+        statusLines.push(`photos included: ${Object.keys(zipImages).length}`);
+      }
+      mergeStatus.textContent = statusLines.join('\n');
     } catch (err) {
       mergeStatus.textContent = 'Error: ' + err.message;
     }
@@ -6741,8 +8140,6 @@ async function main(data, canvas) {
   });
 
   // ── Relationship finder ───────────────────────────────────────────────────
-  const RELATION_A_KEY = 'familyTree.relationA';
-  const RELATION_B_KEY = 'familyTree.relationB';
   let relationA = localStorage.getItem(RELATION_A_KEY) || null;
   let relationB = localStorage.getItem(RELATION_B_KEY) || null;
 
@@ -6967,7 +8364,7 @@ async function main(data, canvas) {
 
   relationCloseEl.addEventListener('click', () => relationPanelEl.classList.remove('open'));
 
-  relationBtn.style.display = 'flex';
+  relationBtn.classList.add('visible');
   relationBtn.addEventListener('click', () => {
     if (relationPanelEl.classList.contains('open')) {
       relationPanelEl.classList.remove('open');
@@ -7001,7 +8398,7 @@ async function main(data, canvas) {
 
   onResize();
 
-  const savedSelected = localStorage.getItem('selected-' + rootId);
+  const savedSelected = localStorage.getItem(SELECTED_KEY);
   if (savedSelected && pMap[savedSelected]) {
     panelEl.style.transition = 'none';
     showPanel(savedSelected);
@@ -7009,6 +8406,59 @@ async function main(data, canvas) {
       panelEl.style.transition = '';
     }));
   }
+
+  function showSampleBanner() {
+    const bar = document.createElement('div');
+    bar.style.cssText = [
+      'position:fixed', 'bottom:0', 'left:0', 'right:0', 'z-index:9999',
+      'background:var(--btn-primary)', 'color:#fff',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'gap:12px', 'padding:10px 16px', 'font-family:sans-serif', 'font-size:0.9rem',
+      'flex-wrap:wrap',
+    ].join(';');
+
+    const label = document.createElement('span');
+    label.textContent = t('sample.label');
+
+    const importBtn = document.createElement('button');
+    importBtn.textContent = t('sample.import');
+    importBtn.style.cssText = 'padding:6px 14px;border:2px solid #fff;border-radius:6px;background:transparent;color:#fff;cursor:pointer;font-size:0.85rem;';
+    importBtn.addEventListener('click', () => { bar.remove(); openPanel(dataPanel); });
+
+    const scratchBtn = document.createElement('button');
+    scratchBtn.textContent = t('sample.scratch');
+    scratchBtn.style.cssText = 'padding:6px 14px;border:2px solid #fff;border-radius:6px;background:transparent;color:#fff;cursor:pointer;font-size:0.85rem;';
+    scratchBtn.addEventListener('click', () => {
+      localStorage.setItem(SCRATCH_KEY, '1');
+      location.reload();
+    });
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.textContent = t('sample.dismiss');
+    dismissBtn.style.cssText = 'padding:6px 14px;border:none;background:transparent;color:rgba(255,255,255,0.8);cursor:pointer;font-size:0.85rem;margin-left:8px;';
+    dismissBtn.addEventListener('click', () => bar.remove());
+
+    bar.appendChild(label);
+    bar.appendChild(importBtn);
+    bar.appendChild(scratchBtn);
+    bar.appendChild(dismissBtn);
+    document.body.appendChild(bar);
+  }
+
+  if (data.isSample) showSampleBanner();
+
+  window.__pw = {
+    showPanel,
+    redraw,
+    pMap,
+    fMap,
+    coordinates,
+    root,
+    get panX()           { return panX; },
+    get panY()           { return panY; },
+    get scale()          { return scale; },
+    get selectedPersonId() { return selectedPersonId; },
+  };
 }
 
 const loginEl = document.getElementById('login');
@@ -7031,10 +8481,97 @@ function setupCanvas() {
   return canvas;
 }
 
-if (window.familyTreeData) {
+function showAddFirstPersonPrompt(canvas) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = [
+    'position:fixed', 'inset:0', 'z-index:9998',
+    'display:flex', 'align-items:center', 'justify-content:center',
+    'background:var(--bg)', 'font-family:sans-serif',
+  ].join(';');
+
+  const card = document.createElement('div');
+  card.style.cssText = [
+    'background:var(--bg)', 'border:1px solid var(--text-muted)',
+    'border-radius:12px', 'padding:32px', 'width:320px',
+    'display:flex', 'flex-direction:column', 'gap:14px',
+    'box-shadow:0 4px 24px rgba(0,0,0,0.15)',
+  ].join(';');
+
+  const title = document.createElement('h2');
+  title.textContent = t('sample.addFirst');
+  title.style.cssText = 'margin:0;font-size:1.1rem;color:var(--text);';
+
+  const firstNameEl = document.createElement('input');
+  firstNameEl.type = 'text';
+  firstNameEl.placeholder = t('rel.firstName');
+  firstNameEl.style.cssText = 'padding:8px 10px;border:1px solid var(--text-muted);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.9rem;';
+
+  const lastNameEl = document.createElement('input');
+  lastNameEl.type = 'text';
+  lastNameEl.placeholder = t('rel.lastName');
+  lastNameEl.style.cssText = 'padding:8px 10px;border:1px solid var(--text-muted);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.9rem;';
+
+  const sexRow = document.createElement('div');
+  sexRow.style.cssText = 'display:flex;gap:16px;color:var(--text);font-size:0.9rem;align-items:center;';
+  ['M', 'F'].forEach((val, i) => {
+    const lbl = document.createElement('label');
+    lbl.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'scratch-sex';
+    radio.value = val;
+    if (i === 0) radio.checked = true;
+    lbl.appendChild(radio);
+    lbl.appendChild(document.createTextNode(val === 'M' ? t('person.male') : t('person.female')));
+    sexRow.appendChild(lbl);
+  });
+
+  const createBtn = document.createElement('button');
+  createBtn.textContent = t('sample.create');
+  createBtn.style.cssText = [
+    'padding:10px', 'background:var(--btn-primary)', 'color:#fff',
+    'border:none', 'border-radius:8px', 'cursor:pointer', 'font-size:0.95rem',
+  ].join(';');
+
+  createBtn.addEventListener('click', () => {
+    const givenname = firstNameEl.value.trim();
+    const surname   = lastNameEl.value.trim();
+    if (!givenname && !surname) { firstNameEl.focus(); return; }
+    createBtn.disabled = true;
+    const sex = sexRow.querySelector('input[name="scratch-sex"]:checked')?.value || 'M';
+    const fullname = surname ? `${givenname} /${surname}/` : givenname;
+    localStorage.setItem(SCRATCH_ROOT_KEY, '@I1@');
+    localStorage.setItem(NEW_PEOPLE_KEY_NS, JSON.stringify({ '@I1@': { fullname, givenname, surname, sex } }));
+    overlay.remove();
+    main({ dataVersion: 3, rootId: '@I1@', people: [], fams: [], images: {} }, canvas);
+  });
+
+  card.appendChild(title);
+  card.appendChild(firstNameEl);
+  card.appendChild(lastNameEl);
+  card.appendChild(sexRow);
+  card.appendChild(createBtn);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  firstNameEl.focus();
+}
+
+if (localStorage.getItem(SCRATCH_KEY) === '1') {
+  const canvas = setupCanvas();
+  const scratchRoot   = localStorage.getItem(SCRATCH_ROOT_KEY);
+  const scratchPeople = JSON.parse(localStorage.getItem(NEW_PEOPLE_KEY_NS) || '{}');
+  if (scratchRoot && scratchPeople[scratchRoot]) {
+    main({ dataVersion: 3, rootId: scratchRoot, people: [], fams: [], images: {} }, canvas);
+  } else {
+    localStorage.removeItem(SCRATCH_ROOT_KEY);
+    showAddFirstPersonPrompt(canvas);
+  }
+} else if (window.familyTreeData) {
   const canvas = setupCanvas();
   main(window.familyTreeData, canvas);
 } else {
+  loginEl.style.display = 'block';
+  document.getElementById('login-bg').style.display = 'block';
   passwordEl.focus();
   passwordEl.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
@@ -7098,6 +8635,41 @@ if (window.familyTreeData) {
     }
     clearInterval(interval);
   });
+}
+
+// ── PWA service worker ───────────────────────────────────────────────────────
+// family-tree-1778933707903 is replaced at build time by scripts/build.js with a timestamp
+// so every build gets a fresh cache name and old caches are evicted automatically.
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'family-tree-1778933707903';
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.add(self.location.href.replace(/\\/[^\\/]*$/, '/')))
+  );
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
+  }
+});
+`;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, { scope: './' })
+    .then(() => URL.revokeObjectURL(swUrl))
+    .catch(() => {});
 }
 
 

@@ -4183,7 +4183,10 @@ class Indyvidual {
         resolve();
       };
       img.onerror = () => {
-        resolve();
+        const fallback = new Image();
+        fallback.onload = () => { this.img = fallback; resolve(); };
+        fallback.onerror = resolve;
+        fallback.src = this.placeholderBase64Img;
       };
     })
   }
@@ -6501,7 +6504,23 @@ async function main(data, canvas) {
   let lastFocusedPersonId = null;
   let pendingImageBase64 = null;
 
-  function exitEditMode() {
+  function exitEditMode(save = false) {
+    if (save && pendingImageBase64 !== null && currentPersonId) {
+      const person = pMap[currentPersonId];
+      if (person) {
+        const src = pendingImageBase64 === '' ? person.placeholderBase64Img : pendingImageBase64;
+        person.base64Img = src;
+        if (pendingImageBase64 === '' && !data.images[currentPersonId]) {
+          delete imageEdits[currentPersonId];
+        } else {
+          imageEdits[currentPersonId] = pendingImageBase64;
+        }
+        localStorage.setItem(IMAGES_KEY, JSON.stringify(imageEdits));
+        const img = new Image();
+        img.onload = img.onerror = () => { person.img = img; redraw(); };
+        img.src = src;
+      }
+    }
     pendingImageBase64 = null;
     editPhotoInput.value = '';
     panelImgEditBtn.style.display = 'none';
@@ -6812,7 +6831,7 @@ async function main(data, canvas) {
     if (!person) return;
     currentPersonId = personId;
     lastFocusedPersonId = personId;
-    exitEditMode();
+    exitEditMode(true);
     selectedPersonId = personId;
     localStorage.setItem(SELECTED_KEY, personId);
     panelImgEl.src = person.base64Img;
@@ -6905,9 +6924,9 @@ async function main(data, canvas) {
   }
 
   function closePanel() {
+    exitEditMode(true);
     currentPersonId = null;
     selectedPersonId = null;
-    exitEditMode();
     localStorage.removeItem(SELECTED_KEY);
     panelEl.classList.remove('open');
     panelHistory.length = 0;
@@ -8046,7 +8065,7 @@ async function main(data, canvas) {
   sendWebhookBtn.addEventListener('click', async () => {
     const email = webhookEmailEl.value.trim();
     localStorage.setItem(WEBHOOK_EMAIL_KEY, email);
-    const payload = { edits, newPeople, imageEdits, familyEdits, message: webhookMessageEl.value, email, ...(data.isSample ? { source: 'scratch' } : {}) };
+    const payload = { edits, newPeople, imageEdits, familyEdits, message: webhookMessageEl.value, email, rootId, ...(data.isSample ? { source: 'scratch' } : {}) };
     sendWebhookBtn.disabled = true;
     sendWebhookBtn.textContent = t('data.sending');
     try {
@@ -8803,11 +8822,11 @@ if (localStorage.getItem(SCRATCH_KEY) === '1') {
 }
 
 // ── PWA service worker ───────────────────────────────────────────────────────
-// family-tree-1778946135358 is replaced at build time by scripts/build.js with a timestamp
+// family-tree-1780246400135 is replaced at build time by scripts/build.js with a timestamp
 // so every build gets a fresh cache name and old caches are evicted automatically.
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'family-tree-1778946135358';
+const CACHE = 'family-tree-1780246400135';
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.add(self.location.href.replace(/\\/[^\\/]*$/, '/')))
